@@ -152,8 +152,7 @@ public class JWTService {
      * 
      * @param token
      * @return Date when token expires
-     */
-    private Date extractExpiration(String token) {
+     */private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 

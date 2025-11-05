@@ -5,3 +5,4 @@
 3. Added resources directory inside of test and added application-test.yml because of failed
    mvn clean install due to tests/ trying to connect to database 
 4. added @ActiveProfiles to test class.
+5. Added docs/ for note taking

@@ -51,7 +51,7 @@ app:
   frontend-url: http://localhost:3000
   verification:
     code-length: 6
-    expiration-minutes: 10
+    expiration-minutes: 15
 
 logging:
   level:

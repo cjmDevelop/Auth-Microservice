@@ -32,35 +32,9 @@ A microservice which can process user authentication and authorization for moder
 This authentication microservice was built as a functional and educational self-starter project to better understand backend development and the microservice architecture. 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Acknowledgments
 
-- Built with guidance from Claude AI (Anthropic) for learning Spring Boot architecture and best practices
+- Built with help from Claude AI (Anthropic) for learning Spring Boot architecture and best practices
 - Twilio for SMS verification
 - Spring Boot community for excellent documentation
 
@@ -72,7 +46,5 @@ This authentication microservice was built as a learning project to understand:
 - Spring Security architecture
 - Microservice design patterns
 
-Development benefited from AI assistance (Claude AI by Anthropic) for understanding 
-concepts, debugging, and architectural guidance. All code was manually implemented 
-and reviewed to ensure comprehensive understanding.
+
 

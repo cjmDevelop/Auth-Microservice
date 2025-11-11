@@ -2,4 +2,77 @@
 
 A Spring Boot authentication and authorization microservice which will include **JWT** tokens, **email verification**, and **SMS verification** capabilities.
 
-A work in progress, currently trying to make this a microservice which I can add to my frontend projects.
+## Project Status
+
+**Work in Progress** - Current focus areas:
+- Completing core authentication flows
+- Improving Documentation
+
+
+## Overview 
+
+A microservice which can process user authentication and authorization for modern applications, offering a secure and scalable solution that can be easily integrated into frontend projects.
+
+### Key Features
+
+- **JWT Authentication**: Secure token-based authentication system
+- **Email Verification**: User email validation during registration
+- **SMS Verification**: Two-Factor authentication via SMS
+
+## Technology Stack
+
+- **Framework**: Spring Boot
+- **Security**: Spring Security with JWT
+- **SMS Provider**: Twilio
+- **Build tool**: Maven
+- **Java Version**: 21
+
+
+### Why am I building this?
+This authentication microservice was built as a functional and educational self-starter project to better understand backend development and the microservice architecture. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Acknowledgments
+
+- Built with guidance from Claude AI (Anthropic) for learning Spring Boot architecture and best practices
+- Twilio for SMS verification
+- Spring Boot community for excellent documentation
+
+## About This Project
+
+This authentication microservice was built as a learning project to understand:
+- JWT-based authentication
+- Email/SMS verification flows
+- Spring Security architecture
+- Microservice design patterns
+
+Development benefited from AI assistance (Claude AI by Anthropic) for understanding 
+concepts, debugging, and architectural guidance. All code was manually implemented 
+and reviewed to ensure comprehensive understanding.
+

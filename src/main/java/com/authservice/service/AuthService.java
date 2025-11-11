@@ -96,7 +96,7 @@ public class AuthService {
                 .phoneNumber(requestDto.getPhoneNumber())
                 .role(Role.USER)
                 .emailVerified(false)
-                .phoneVerified(false)
+                .phoneVerified(false) //red error under user: The local variable user may not have been initializedJava(536870963)
                 .isEnabled(true)
                 .build();
 
@@ -265,7 +265,7 @@ public class AuthService {
         saveVerificationToken(user, verificationCode, VerificationToken.VerificationType.PHONE);
 
         // Send SMS
-        smsService.sendVerificationSms(user.getPhoneNumber(), verificationCode);
+        smsService.sendVerificationSms(user.getPhoneNumber(), verificationCode); //The method sendVerificationSms(String, String) is undefined for the type SmsServiceJava(67108964)
 
         log.info("Phone verification code sent to: {}", user.getPhoneNumber());
     }
@@ -313,7 +313,7 @@ public class AuthService {
          * @param email - User's email
          * @throws RuntimeException if user not found or already verified
          */ @Transactional
-            public void resendEmailVerication(String email) {
+            public void resendEmailVerification(String email) {
                 log.info("Resending email verification to: {}", email);
 
                 User user = userRepository.findByEmail(email)
@@ -322,7 +322,7 @@ public class AuthService {
                 if(user.isEmailVerified()) {
                     throw new RuntimeException("Email already verified");
                 }
-s
+
                 //Delete old tokens
                 tokenRepository.findByUserAndTypeAndVerifiedAtIsNull(
                             user, 
@@ -334,7 +334,7 @@ s
                 saveVerificationToken(user, verificationCode, VerificationToken.VerificationType.EMAIL);
 
                 //Resend email
-                emailService.sendVerificationEmail(user.getEmail(), verificationCode, user.getFirstName);
+                emailService.sendVerificationEmail(user.getEmail(), verificationCode, user.getFirstName());
            
                 log.info("Verification email resent to: {}", email);
             
@@ -386,9 +386,10 @@ s
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .phoneNumber(user.getPhoneNumber())
+                .phoneNumber(user.getPhoneNumber()) //The method phoneNumber(String) in the type UserDto.UserDtoBuilder is not applicable for the arguments (boolean)Java(67108979)
                 .role(user.getRole().name())
                 .emailVerified(user.isEmailVerified())
+                .phoneVerified(user.isPhoneVerified())
                 .build();
 
     }

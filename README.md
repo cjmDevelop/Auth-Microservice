@@ -36,7 +36,7 @@ This authentication microservice was built as a functional and educational self-
 
 - Built with help from Claude AI (Anthropic) for learning Spring Boot architecture and best practices
 - Twilio for SMS verification
-- Spring Boot community for excellent documentation
+
 
 ## About This Project
 

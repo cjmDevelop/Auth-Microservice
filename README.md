@@ -34,7 +34,7 @@ This authentication microservice was built as a functional and educational self-
 
 ## Acknowledgments
 
-- Built with help from Claude AI (Anthropic) for starter files / templates, and boiler-plate code, which helped me get this project started quicker & easier. 
+- Built with help from Claude AI (Anthropic) for starter files and some boiler-plate code, which helped me get the project started quicker
 - Twilio for SMS verification
 
 

@@ -34,7 +34,7 @@ This authentication microservice was built as a functional and educational self-
 
 ## Acknowledgments
 
-- Built with help from Claude AI (Anthropic) for learning Spring Boot architecture and best practices, using the "70/30 rule" or keeping AI-generated text below 20-30%
+- Built with help from Claude AI (Anthropic) for starter files / templates, and boiler-plate code, which helped me get this project started quicker & easier. 
 - Twilio for SMS verification
 
 

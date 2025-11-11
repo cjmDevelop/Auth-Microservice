@@ -34,7 +34,6 @@ This authentication microservice was built as a functional and educational self-
 
 ## About This Project
 
-This authentication microservice was built as a learning project to understand:
 - JWT-based authentication
 - Email/SMS verification flows
 - Spring Security architecture

@@ -34,7 +34,7 @@ This authentication microservice was built as a functional and educational self-
 
 ## Acknowledgments
 
-- Built with help from Claude AI (Anthropic) for starter files and some boiler-plate code, which helped me get the project started quicker
+- Built with help from Claude AI (Anthropic) for starter files and some boiler-plate code which helped me get the project started quicker; I'm also implementing the 70-30 rule, or in other words, trying to keep ai generated code limited to 20-30%
 - Twilio for SMS verification
 
 

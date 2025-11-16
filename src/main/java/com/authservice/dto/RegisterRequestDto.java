@@ -33,7 +33,7 @@ public class RegisterRequestDto {
     @NotBlank(message = "First name is required")
     private String firstName;
 
-    @NotBlank(message = "Last name is required")
+    // @NotBlank(message = "Last name is required") <- Making lastName optional for more user-privacy
     private String lastName;
 
     @Pattern(regexp = "^\\+?[1-9]\\d{1,14}$", message = "Invalid phone number format")

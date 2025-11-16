@@ -77,7 +77,7 @@ public class EmailService {
             mailSender.send(message);
             log.info("Welcome email sent to: {}", to);
         } catch (MessagingException e) {
-            log.error("Failed to send welcom email to: {}", to, e);
+            log.error("Failed to send welcome email to: {}", to, e);
         }
     }
 
@@ -96,8 +96,7 @@ public class EmailService {
                     body { 
                         font-family: Arial, sans-serif; 
                         line-height: 1.6; 
-                        color: #333; 
-                        background-color: #f4f4f4;
+                  
                     }
                     .container { 
                         max-width: 600px; 
@@ -108,7 +107,7 @@ public class EmailService {
                         box-shadow: 0 0 20px rgba(0,0,0,0.1);
                     }
                     .header { 
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                     
                         color: white; 
                         padding: 30px 20px; 
                         text-align: center; 
@@ -123,11 +122,11 @@ public class EmailService {
                     .code-box { 
                         font-size: 36px; 
                         font-weight: bold; 
-                        color: #667eea;
+                       
                         text-align: center; 
                         padding: 25px; 
-                        background: #f8f9ff;
-                        border: 2px dashed #667eea;
+                    
+              
                         border-radius: 8px; 
                         margin: 30px 0; 
                         letter-spacing: 8px;
@@ -135,12 +134,12 @@ public class EmailService {
                     .footer { 
                         text-align: center; 
                         padding: 20px; 
-                        background: #f8f9fa;
-                        color: #666; 
+                    
+                      
                         font-size: 12px; 
                     }
                     .warning {
-                        color: #dc3545;
+                        
                         font-size: 14px;
                         margin-top: 20px;
                     }
@@ -155,7 +154,7 @@ public class EmailService {
                         <p>Hi <strong>%s</strong>,</p>
                         <p>Thank you for registering! Please use the verification code below to verify your email address:</p>
                         <div class="code-box">%s</div>
-                        <p>This code will expire in <strong>10 minutes</strong>.</p>
+                        <p>This code will expire in <strong>15 minutes</strong>.</p>
                         <p class="warning">⚠️ If you didn't create an account, please ignore this email.</p>
                     </div>
                     <div class="footer">
@@ -184,8 +183,7 @@ public class EmailService {
                     body { 
                         font-family: Arial, sans-serif; 
                         line-height: 1.6; 
-                        color: #333; 
-                        background-color: #f4f4f4;
+                      
                     }
                     .container { 
                         max-width: 600px; 
@@ -196,7 +194,7 @@ public class EmailService {
                         box-shadow: 0 0 20px rgba(0,0,0,0.1);
                     }
                     .header { 
-                        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                       
                         color: white; 
                         padding: 30px 20px; 
                         text-align: center; 
@@ -211,7 +209,7 @@ public class EmailService {
                     .button {
                         display: inline-block;
                         padding: 12px 30px;
-                        background: #11998e;
+                     
                         color: white;
                         text-decoration: none;
                         border-radius: 5px;
@@ -220,8 +218,7 @@ public class EmailService {
                     .footer { 
                         text-align: center; 
                         padding: 20px; 
-                        background: #f8f9fa;
-                        color: #666; 
+                  
                         font-size: 12px; 
                     }
                 </style>

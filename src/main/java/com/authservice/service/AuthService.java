@@ -96,7 +96,7 @@ public class AuthService {
                 .phoneNumber(requestDto.getPhoneNumber())
                 .role(Role.USER)
                 .emailVerified(false)
-                .phoneVerified(false) //red error under user: The local variable user may not have been initializedJava(536870963)
+                .phoneVerified(false) 
                 .isEnabled(true)
                 .build();
 
@@ -105,7 +105,6 @@ public class AuthService {
         log.info("User saved with ID: {}", user.getId());
 
         // Generate and send email verification code
-        // TO DO: define generateVerificationCode() & saveVerificationToken()
         String verificationCode = generateVerificationCode();
         saveVerificationToken(user, verificationCode, VerificationToken.VerificationType.EMAIL);
 
@@ -116,11 +115,9 @@ public class AuthService {
                 user.getFirstName());
 
         // Convert User entity to DTO
-        // TO DO: define convertToDto()
         UserDto userDto = convertToDto(user);
 
         // Return response without tokens
-        // TO DO: Explain what Bearer is / is this in header? what are headers?
         return AuthResponseDto.builder()
                 .user(userDto)
                 .tokenType("Bearer")
@@ -386,7 +383,7 @@ public class AuthService {
                 .email(user.getEmail())
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
-                .phoneNumber(user.getPhoneNumber()) //The method phoneNumber(String) in the type UserDto.UserDtoBuilder is not applicable for the arguments (boolean)Java(67108979)
+                .phoneNumber(user.getPhoneNumber()) 
                 .role(user.getRole().name())
                 .emailVerified(user.isEmailVerified())
                 .phoneVerified(user.isPhoneVerified())

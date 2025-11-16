@@ -187,7 +187,7 @@ public class JWTService {
 
     /**
      * Get token expiration time (used in API responses)
-     * Frontend needs this to know when yo refresh
+     * Frontend needs this to know when on refresh
      * @return Expiration time in milliseconds
      */public long getExpirationTime() {
         return jwtExpiration;

@@ -4,14 +4,28 @@ A Spring Boot authentication and authorization microservice which will include *
 
 ## Project Status
 
-**Work in Progress** - Current focus areas:
-- Completing core authentication flows
+### Implemented 
+- **User Registration** - Creates new user account with email and password
+- **Email Verification** - 6-digit verification code with a 15 minute expiration time
+- **User Login** - JWT-based authentication with access and refresh tokens
+- **Email Notifications** - Added HTML email templates for verification and welcome messages 
+- **PostgresSQL Integration** - Persistent data storage with JPA/Hibernate
+- **Spring Security** - Comprehensive security configuration
+
+**to do's:** :
+- Token refresh endpoint
 - Improving Documentation
+- Twilio integration
+- Role-based access control (RBAC)
+- OAuth2 integration 
+- Rate limiting
+- Docker containerization
+- Comprehensive testing
 
 
 ## Overview 
 
-A microservice which can process user authentication and authorization for modern applications, offering a secure and scalable solution that can be easily integrated into frontend projects.
+A microservice which can process user authentication and authorization for modern applications, offering a secure and scalable solution that can be easily integrated into my frontend projects.
 
 ### Key Features
 

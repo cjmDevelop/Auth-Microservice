@@ -10,17 +10,15 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class AuthMicroserviceApplication {
 
 	public static void main(String[] args) {
-		/**
-		 * AuthMicroserviceApplication.java 
-		 * Making sure to load .env file first before Spring-Boot runs inorder not to leak any sensitive info in output.
-		 */
+		//Load .env file and set system properties
 		Dotenv dotenv = Dotenv.configure()
-		.ignoreIfMissing()
-		.load();
+			.ignoreIfMissing()
+			.load();
 
 		dotenv.entries().forEach(entry -> 
 		System.setProperty(entry.getKey(), entry.getValue())
 		);
+
 		
 		SpringApplication.run(AuthMicroserviceApplication.class, args);
 	}

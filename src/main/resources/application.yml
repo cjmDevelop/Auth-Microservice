@@ -24,14 +24,14 @@ spring:
   
   mail:
     host: smtp.gmail.com
-    port: 587
-    username: ${EMAIL_USERNAME}
-    password: ${EMAIL_PASSWORD}
+    port: ${SPRING_MAIL_PORT}
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
-          starttls:
+          starttls: 
             enable: true
 
 server:
@@ -40,7 +40,7 @@ server:
 jwt:
   secret: ${JWT_SECRET}
   expiration: 86400000
-  refresh-expiration: 604800000
+  refresh-expiration: 604800000 
 
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID}
@@ -55,5 +55,8 @@ app:
 
 logging:
   level:
-    com.authservice: DEBUG
-    org.springframework.security: DEBUG
+    com.authservice: INFO
+    org.springframework.security: WARN
+    org.springframework.mail: INFO
+    org.springframework.jdbc: WARN
+    org.springframework.boot.autoconfigure: WARN

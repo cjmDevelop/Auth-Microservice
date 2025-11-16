@@ -15,7 +15,7 @@ A Spring Boot authentication and authorization microservice which currently incl
 **to do's:** 
 - Token refresh endpoint
 - Improving Documentation
-- Twilio integration
+- SMS Twilio integration
 - Role-based access control (RBAC)
 - OAuth2 integration 
 - Rate limiting

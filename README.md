@@ -31,7 +31,7 @@ A microservice which can process user authentication and authorization for moder
 
 - **JWT Authentication**: Secure token-based authentication system
 - **Email Verification**: User email validation during registration
-- **SMS Verification**: Two-Factor authentication via SMS
+
 
 ## Technology Stack
 

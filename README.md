@@ -12,7 +12,7 @@ A Spring Boot authentication and authorization microservice which will include *
 - **PostgresSQL Integration** - Persistent data storage with JPA/Hibernate
 - **Spring Security** - Comprehensive security configuration
 
-**to do's:** :
+**to do's:** 
 - Token refresh endpoint
 - Improving Documentation
 - Twilio integration

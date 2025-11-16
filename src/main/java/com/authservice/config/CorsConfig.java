@@ -17,7 +17,6 @@ public class CorsConfig {
 
         config.addAllowedOrigin("http://localhost:3000"); //randomwritesrandomlights
        
-        
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);

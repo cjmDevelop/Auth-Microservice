@@ -1,6 +1,5 @@
 package com.authservice.config;
 
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -15,7 +14,7 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        config.addAllowedOrigin("http://localhost:3000"); //randomwritesrandomlights
+        config.addAllowedOrigin("http://localhost:3000"); //randomwritesrandomlights locally should be running on port: 3000
        
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
@@ -26,5 +25,4 @@ public class CorsConfig {
         return new CorsFilter(source); 
     }
 
-    
 }

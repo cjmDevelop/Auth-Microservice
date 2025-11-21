@@ -9,4 +9,4 @@
 
 ------------------------------
 11-21-25
-1. Starting to create Note.java entity for randomwritesrandomlights.com
+1. Created Note.java entity for randomwritesrandomlights.com & updated personal notes."

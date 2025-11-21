@@ -6,3 +6,7 @@
    mvn clean install due to tests/ trying to connect to database 
 4. added @ActiveProfiles to test class.
 5. Added docs/ for note taking
+
+------------------------------
+11-21-25
+1. Starting to create Note.java entity for randomwritesrandomlights.com

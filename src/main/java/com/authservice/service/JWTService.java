@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
@@ -28,26 +27,26 @@ import javax.crypto.SecretKey;
  * Service for generating and validating JWT tokens.
  * Handles access tokens and refresh tokens with configurable expiration times.
  */
- @Service
+@Service
 public class JWTService {
     /**
      * Used to sign tokens, so tokens can't be forged.
      */@Value("${jwt.secret}")
-    private String secretKey;    
+       private String secretKey;    
 
     /**
      * Access token time in milliseconds
      * Time is set in application.yml 86400000 = 24 hours
      * After this time, user needs to refresh or login again
      */@Value("${jwt.expiration}")
-    private long jwtExpiration;
+       private long jwtExpiration;
 
     /**
      * Refresh token time in milliseconds
      * Time is set in application.yml 86400000 = 24 hours
      * Used to get new access tokens without re-logging in
      */@Value("${jwt.refresh-expiration}")
-    private long refreshExpiration;
+       private long refreshExpiration;
 
 
   /**
@@ -66,7 +65,7 @@ public class JWTService {
    * @param claimsResolver - Function that identifies which claim to extract
    * @return - The specific claim value
    * 
-   * Exxample:
+   * Example:
    * extractClaim(token, Claims::getSubject) -> returns String (username)
    * extractClaim(token, Claims::getExpiration) -> returns Date (expiry)
    * 

@@ -11,7 +11,7 @@ import com.authservice.model.VerificationToken;
 import com.authservice.model.User;
 
 /**
- * VerificationTokenReposiroty.java 
+ * VerificationTokenRepository.java 
  * Repository for verification token database operations.
  * JPA generates SQL based on method name.
  * Spring Data JPA dependency handles CRUD operations without manual implementation

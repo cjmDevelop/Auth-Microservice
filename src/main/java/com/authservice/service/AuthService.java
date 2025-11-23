@@ -9,11 +9,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.authservice.dto.AuthResponseDto;
-import com.authservice.dto.LoginRequestDto;
-import com.authservice.dto.RegisterRequestDto;
 import com.authservice.dto.UserDto;
-import com.authservice.dto.VerificationRequestDto;
+import com.authservice.dto.auth.AuthResponseDto;
+import com.authservice.dto.auth.LoginRequestDto;
+import com.authservice.dto.auth.RegisterRequestDto;
+import com.authservice.dto.auth.VerificationRequestDto;
 import com.authservice.repository.UserRepository;
 import com.authservice.repository.VerificationTokenRepository;
 

@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RestController
-@RequiredArgsConstructor//@RequiredArgsConstructor prevent the need to manually apply Constructor injection
+@RequiredArgsConstructor
 public class TestController {
 
     private final EmailService emailService;

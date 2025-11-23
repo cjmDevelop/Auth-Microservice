@@ -3,10 +3,10 @@ package com.authservice.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.authservice.dto.AuthResponseDto;
-import com.authservice.dto.LoginRequestDto;
-import com.authservice.dto.RegisterRequestDto;
-import com.authservice.dto.VerificationRequestDto;
+import com.authservice.dto.auth.AuthResponseDto;
+import com.authservice.dto.auth.LoginRequestDto;
+import com.authservice.dto.auth.RegisterRequestDto;
+import com.authservice.dto.auth.VerificationRequestDto;
 import com.authservice.service.AuthService;
 
 import lombok.RequiredArgsConstructor;

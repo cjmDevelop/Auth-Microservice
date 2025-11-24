@@ -2,6 +2,7 @@ package com.authservice.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.authservice.dto.notes.CreateNoteRequestDto;
 import com.authservice.dto.notes.NoteResponseDto;
 import com.authservice.dto.notes.UpdateNoteRequestDto;
 import com.authservice.model.Note;
@@ -49,9 +50,17 @@ public class NoteController {
         return responses; 
     }
     
-    @PostMapping("/create-note")
-    public Note createNote(@RequestParam String content) {
-        return noteService.createNote(content);
+    @PostMapping
+    public NoteResponseDto createNote(@RequestBody CreateNoteRequestDto request) {
+        
+        Note note = noteService.createNote(request.getContent());
+        
+        return NoteResponseDto.builder()
+                .id(note.getId())
+                .content(note.getContent())
+                .createdAt(note.getCreatedAt())
+                .updatedAt(note.getUpdatedAt())
+                .build();
     }
 
 

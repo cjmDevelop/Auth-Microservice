@@ -39,7 +39,7 @@ import lombok.NoArgsConstructor;
     private User user;
         
 
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
 
@@ -50,8 +50,6 @@ import lombok.NoArgsConstructor;
     private LocalDateTime updatedAt;
 
     
-    //TO DO: Add soft delete? or hard delete? or both?
-    //Adding hard delete for now
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 

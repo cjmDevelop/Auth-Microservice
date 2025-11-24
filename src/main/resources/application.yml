@@ -56,7 +56,7 @@ app:
 logging:
   level:
     com.authservice: INFO
-    org.springframework.security: WARN
+    org.springframework.security: DEBUG
     org.springframework.mail: INFO
     org.springframework.jdbc: WARN
     org.springframework.boot.autoconfigure: WARN

@@ -16,6 +16,7 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 /**@Configuration & @EnableSecurity  
@@ -27,11 +28,13 @@ import org.springframework.security.web.SecurityFilterChain;
    public class SecurityConfig {
 
         @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
             http.authorizeHttpRequests((authorize) -> authorize 
-                    .requestMatchers("/test/**", "/api/auth/**").permitAll() 
+                    .requestMatchers("/api/auth/**").permitAll() //Auth endpoint
+                    .requestMatchers("/api/notes/**").authenticated() //Notes (randomwritesrandomlights.com)
                     .anyRequest().authenticated()
-                    ).csrf(csrf -> csrf.disable()); //Temporarily disabling for testing
+                    ).csrf(csrf -> csrf.disable()) //Temporarily disabling for testing
+                     .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);                    
 
             return http.build();
         }

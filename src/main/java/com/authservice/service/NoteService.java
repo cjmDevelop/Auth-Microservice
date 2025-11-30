@@ -42,7 +42,7 @@ public class NoteService {
      */
     public List<Note> getUserNotes() {
         Long currentUserId = getCurrentAuthenticatedUserId();
-        return noteRepository.findByUserIdOrderByCreatedAtDesc(currentUserId);
+        return noteRepository.findByUserIdOrderByCreatedAtAsc(currentUserId);
     }
 
     /**

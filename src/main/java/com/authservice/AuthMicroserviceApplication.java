@@ -19,7 +19,6 @@ public class AuthMicroserviceApplication {
 		System.setProperty(entry.getKey(), entry.getValue())
 		);
 
-		
 		SpringApplication.run(AuthMicroserviceApplication.class, args);
 	}
 

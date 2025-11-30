@@ -15,7 +15,8 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.addAllowedOrigin("http://localhost:3000"); //randomwritesrandomlights locally should be running on port: 3000
-       
+        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedOrigin("https://randomwritesrandomlights.com");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         config.setAllowCredentials(true);

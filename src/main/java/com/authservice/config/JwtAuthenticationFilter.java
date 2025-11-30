@@ -49,9 +49,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+                System.out.println("🔍JWT Filter running for: " + request.getRequestURI());
+                System.out.println("🔍 Method: " + request.getMethod());
+
+                //Skipping JWT processing for OPTIONS requests (CORS preflight)
+                if("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+                    System.out.println("⏭ Skipping OPTIONS request");
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
         // Step 1. Extract the Authorization header
         // Format expected: "Bearer eyJhbGciOiJ..."
         final String authHeader = request.getHeader("Authorization");
+        System.out.println("📝 Auth header: " + authHeader);
 
         // Step 2: Check if header exists and starts with "Bearer "
         // If not, skip JWT processing
@@ -111,9 +122,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                  * Controllers can access this via SecurityContextHolder
                  */
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-
+                    System.out.println("🔐Authentication SET in SecurityContext");
+            } else {
+                System.out.println("❌Token is invalid");
             }
-
+        } else {
+            System.out.println("⚠️User Already authenticated or email is null");
         }
 
         /**

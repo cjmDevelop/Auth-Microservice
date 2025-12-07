@@ -243,4 +243,137 @@ public class EmailService {
             </html>
                 """.formatted(name);
     }
+
+
+
+    /**
+ * Send password reset email with 6-digit code
+ */
+public void sendPasswordResetEmail(String to, String username, String resetCode) {
+    try {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setFrom(fromEmail);
+        helper.setTo(to);
+        helper.setSubject("Reset Your Password - Random Writes Random Lights");
+
+        String htmlContent = buildPasswordResetEmail(username, resetCode);
+        helper.setText(htmlContent, true);
+
+        mailSender.send(message);
+    } catch (MessagingException e) {
+        throw new RuntimeException("Failed to send password reset email", e);
+    }
+}
+
+/**
+ * Send confirmation email after password change
+ */
+public void sendPasswordChangedConfirmation(String to, String username) {
+    try {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+        helper.setFrom(fromEmail);
+        helper.setTo(to);
+        helper.setSubject("Password Changed - Random Writes Random Lights");
+
+        String htmlContent = buildPasswordChangedEmail(username);
+        helper.setText(htmlContent, true);
+
+        mailSender.send(message);
+    } catch (MessagingException e) {
+        throw new RuntimeException("Failed to send password changed confirmation", e);
+    }
+}
+
+/**
+ * Build HTML content for password reset email
+ */
+private String buildPasswordResetEmail(String username, String resetCode) {
+    return "<!DOCTYPE html>" +
+           "<html>" +
+           "<head>" +
+           "    <style>" +
+           "        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+           "        .container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+           "        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }" +
+           "        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }" +
+           "        .code-box { background: white; border: 2px dashed #667eea; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0; }" +
+           "        .code { font-size: 32px; font-weight: bold; color: #667eea; letter-spacing: 5px; }" +
+           "        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }" +
+           "        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }" +
+           "    </style>" +
+           "</head>" +
+           "<body>" +
+           "    <div class='container'>" +
+           "        <div class='header'>" +
+           "            <h1>🔐 Password Reset Request</h1>" +
+           "        </div>" +
+           "        <div class='content'>" +
+           "            <p>Hi " + username + ",</p>" +
+           "            <p>We received a request to reset your password for your <strong>Random Writes Random Lights</strong> account.</p>" +
+           "            <p>Use the code below to reset your password:</p>" +
+           "            <div class='code-box'>" +
+           "                <div class='code'>" + resetCode + "</div>" +
+           "            </div>" +
+           "            <div class='warning'>" +
+           "                <strong>⏰ This code will expire in 15 minutes</strong>" +
+           "            </div>" +
+           "            <p>If you didn't request a password reset, please ignore this email or contact support if you have concerns.</p>" +
+           "            <p>For security reasons, never share this code with anyone.</p>" +
+           "        </div>" +
+           "        <div class='footer'>" +
+           "            <p>© 2024 Random Writes Random Lights. All rights reserved.</p>" +
+           "            <p>This is an automated email, please do not reply.</p>" +
+           "        </div>" +
+           "    </div>" +
+           "</body>" +
+           "</html>";
+}
+
+/**
+ * Build HTML content for password changed confirmation
+ */
+private String buildPasswordChangedEmail(String username) {
+    return "<!DOCTYPE html>" +
+           "<html>" +
+           "<head>" +
+           "    <style>" +
+           "        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }" +
+           "        .container { max-width: 600px; margin: 0 auto; padding: 20px; }" +
+           "        .header { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }" +
+           "        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }" +
+           "        .success-box { background: #d4edda; border: 1px solid #c3e6cb; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0; }" +
+           "        .warning { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }" +
+           "        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }" +
+           "    </style>" +
+           "</head>" +
+           "<body>" +
+           "    <div class='container'>" +
+           "        <div class='header'>" +
+           "            <h1>✅ Password Successfully Changed</h1>" +
+           "        </div>" +
+           "        <div class='content'>" +
+           "            <p>Hi " + username + ",</p>" +
+           "            <div class='success-box'>" +
+           "                <h2 style='color: #155724; margin: 0;'>Your password has been changed successfully!</h2>" +
+           "            </div>" +
+           "            <p>Your <strong>Random Writes Random Lights</strong> account password was recently changed.</p>" +
+           "            <p>You can now log in with your new password.</p>" +
+           "            <div class='warning'>" +
+           "                <strong>⚠️ Didn't change your password?</strong><br>" +
+           "                If you didn't make this change, please contact our support team immediately to secure your account." +
+           "            </div>" +
+           "        </div>" +
+           "        <div class='footer'>" +
+           "            <p>© 2024 Random Writes Random Lights. All rights reserved.</p>" +
+           "            <p>This is an automated email, please do not reply.</p>" +
+           "        </div>" +
+           "    </div>" +
+           "</body>" +
+           "</html>";
+}
+
 }

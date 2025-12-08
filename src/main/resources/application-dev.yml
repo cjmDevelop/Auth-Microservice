@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: auth-microservice
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/authservice_db
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+      
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  
+  mail:
+    host: smtp.gmail.com
+    port: ${SPRING_MAIL_PORT}
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls: 
+            enable: true
+
+server:
+  port: 8080
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+  refresh-expiration: 604800000 
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID}
+  auth-token: ${TWILIO_AUTH_TOKEN}
+  phone-number: ${TWILIO_PHONE_NUMBER}
+
+app:
+  frontend-url: http://localhost:3000
+  verification:
+    code-length: 6
+    expiration-minutes: 15
+
+logging:
+  level:
+    com.authservice: INFO
+    org.springframework.security: DEBUG
+    org.springframework.mail: INFO
+    org.springframework.jdbc: WARN
+    org.springframework.boot.autoconfigure: WARN

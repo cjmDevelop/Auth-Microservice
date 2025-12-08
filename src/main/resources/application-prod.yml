@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: auth-microservice
+  
+  datasource:
+    url: ${DATABASE_URL}  
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update  
+    show-sql: false  
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+      
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls: 
+            enable: true
+
+server:
+  port: ${PORT:8080}  
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000
+  refresh-expiration: 604800000 
+
+twilio:
+  account-sid: ${TWILIO_ACCOUNT_SID:}
+  auth-token: ${TWILIO_AUTH_TOKEN:}
+  phone-number: ${TWILIO_PHONE_NUMBER:}
+
+app:
+  frontend-url: ${FRONTEND_URL:https://randomwritesrandomlights.com}
+  verification:
+    code-length: 6
+    expiration-minutes: 15
+
+logging:
+  level:
+    com.authservice: INFO
+    org.springframework.security: WARN
+    org.springframework.mail: WARN
+    org.springframework.jdbc: WARN
+    org.springframework.boot.autoconfigure: WARN

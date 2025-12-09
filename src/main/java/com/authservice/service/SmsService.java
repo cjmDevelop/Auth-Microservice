@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SmsService {
 
-  private final EmailService emailService;
+  private final ResendEmailService emailService;
 
   /**
    * Twilio account credentials from .env file
@@ -39,7 +39,7 @@ public class SmsService {
   @Value("${twilio.phone-number}")
   private String fromPhoneNumber;
 
-  SmsService(EmailService emailService) {
+  SmsService(ResendEmailService emailService) {
     this.emailService = emailService;
   }
 

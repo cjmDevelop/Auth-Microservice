@@ -3,8 +3,8 @@ package com.authservice.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.authservice.service.EmailService;
 
+import com.authservice.service.ResendEmailService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TestController {
 
-    private final EmailService emailService;
+    private final ResendEmailService emailService;
 
     @GetMapping("/test/email")
     public String testEmailService() {

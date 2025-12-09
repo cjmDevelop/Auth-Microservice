@@ -42,7 +42,7 @@ public class AuthService {
     private final VerificationTokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwtService;
-    private final EmailService emailService;
+    private final ResendEmailService emailService;
     private final SmsService smsService;
     private final AuthenticationManager authenticationManager;
 

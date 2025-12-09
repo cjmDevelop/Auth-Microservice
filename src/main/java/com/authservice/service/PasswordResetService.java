@@ -20,7 +20,7 @@ public class PasswordResetService {
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
-    private final EmailService emailService;
+    private final ResendEmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
     private static final int CODE_LENGTH = 6;

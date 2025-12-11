@@ -28,9 +28,13 @@ public class PasswordResetService {
 
     /**
      * Step 1: User requests password reset - generate and send code
+     * 
+     * OPTIMIZED: Email is sent asynchronously, API returns immediately
      */
     @Transactional
     public void initiatePasswordReset(String email) {
+        log.info("🔐 Password reset requested for: {}", email);
+        
         // Find user by email
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
@@ -55,17 +59,22 @@ public class PasswordResetService {
             .build();
 
         passwordResetTokenRepository.save(resetToken);
+        log.info("✅ Reset token saved for: {}", email);
 
-        // Send email with the code
+        // Send email asynchronously (doesn't block API response)
+        // The @Async annotation in ResendEmailService handles this
         emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), code);
         
-        log.info("Password reset initiated for user: {}", email);
+        log.info("📧 Password reset email queued for: {}", email);
+        // API returns immediately, email sends in background!
     }
 
     /**
      * Step 2: Verify the reset code user entered
      */
     public boolean verifyResetCode(String email, String code) {
+        log.info("🔍 Verifying reset code for: {}", email);
+        
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
 
@@ -75,27 +84,35 @@ public class PasswordResetService {
 
         // Check if token exists
         if (resetToken == null) {
+            log.warn("❌ Invalid code for: {}", email);
             return false;
         }
 
         // Check if expired
         if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            log.warn("⏰ Expired code for: {}", email);
             return false;
         }
 
         // Check if already used
         if (resetToken.isUsed()) {
+            log.warn("♻️ Code already used for: {}", email);
             return false;
         }
 
+        log.info("✅ Code verified for: {}", email);
         return true;
     }
 
     /**
      * Step 3: Reset the password after code is verified
+     * 
+     * OPTIMIZED: Confirmation email is sent asynchronously
      */
     @Transactional
     public void resetPassword(String email, String code, String newPassword) {
+        log.info("🔐 Resetting password for: {}", email);
+        
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
 
@@ -125,24 +142,31 @@ public class PasswordResetService {
         resetToken.setUsed(true);
         passwordResetTokenRepository.save(resetToken);
 
-        // Send confirmation email
+        log.info("✅ Password reset successfully for: {}", email);
+
+        // Send confirmation email asynchronously (doesn't block API response)
         emailService.sendPasswordChangedConfirmation(user.getEmail(), user.getFirstName());
         
-        log.info("Password reset successfully for user: {}", email);
+        log.info("📧 Password changed confirmation queued for: {}", email);
+        // API returns immediately, email sends in background!
     }
 
     /**
      * Resend code if user didn't receive it
+     * 
+     * OPTIMIZED: Email is sent asynchronously
      */
     @Transactional
     public void resendResetCode(String email) {
+        log.info("🔄 Resending reset code for: {}", email);
+        
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
 
         // Delete old tokens
         passwordResetTokenRepository.deleteByUser(user);
         
-        // Start fresh password reset
+        // Start fresh password reset (email sent asynchronously)
         initiatePasswordReset(email);
     }
 
@@ -161,5 +185,6 @@ public class PasswordResetService {
     @Transactional
     public void cleanupExpiredTokens() {
         passwordResetTokenRepository.deleteByExpiryDateBefore(LocalDateTime.now());
+        log.info("🧹 Cleaned up expired password reset tokens");
     }
 }

@@ -14,16 +14,21 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        config.addAllowedOrigin("http://localhost:3000"); //randomwritesrandomlights locally should be running on port: 3000
+        // Allowed origins
+        config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedOrigin("http://localhost:5173");
         config.addAllowedOrigin("https://randomwritesrandomlights.com");
+        
+        // IMPORTANT: Allow cron services to ping health endpoints
+        config.addAllowedOriginPattern("*"); // Allows keep-alive services
+        
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
-        config.setAllowCredentials(true);
+        config.setAllowCredentials(false); // Changed from true for health endpoints
 
-        source.registerCorsConfiguration("/api/**", config);
+        // Register CORS for all endpoints (not just /api/**)
+        source.registerCorsConfiguration("/**", config);
 
         return new CorsFilter(source); 
     }
-
 }

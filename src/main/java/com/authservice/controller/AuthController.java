@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.authservice.dto.auth.AccountDeletionDto;
 import com.authservice.dto.auth.AuthResponseDto;
 import com.authservice.dto.auth.LoginRequestDto;
+import com.authservice.dto.auth.PasswordResetRequestDto;
 import com.authservice.dto.auth.RegisterRequestDto;
 import com.authservice.dto.auth.VerificationRequestDto;
 import com.authservice.service.AccountDeletionService;
@@ -42,7 +43,26 @@ public class AuthController {
     public AuthResponseDto verifyEmail(@RequestBody VerificationRequestDto verReqDto) {
         return authService.verifyEmail(verReqDto);
     }
-    
+
+    @PostMapping("/resend-verification-email")
+    public ResponseEntity<?> resendVerificationEmail(@Valid @RequestBody PasswordResetRequestDto request) {
+        try {
+            authService.resendEmailVerification(request.getEmail());
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Verification code resent to your email");
+
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to resend verification email. Please try again.");
+            return ResponseEntity.internalServerError().body(error);
+        }
+    }
 
     @PostMapping("/login")
     public AuthResponseDto login(@RequestBody LoginRequestDto request) {

@@ -25,3 +25,13 @@ twilio:
     account-sid: test-sid
     auth-token: test-token
     phone-number: +10000000000
+
+resend:
+    api-key: test-resend-api-key
+    from-email: test@test.com
+
+app:
+    frontend-url: http://localhost:3000
+    verification:
+        code-length: 6
+        expiration-minutes: 15

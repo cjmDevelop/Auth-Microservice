@@ -533,4 +533,134 @@ public class ResendEmailService {
                 </html>
                 """.formatted(username);
     }
+
+    /**
+     * Send account deletion confirmation email
+     *
+     * @Async - Runs in background thread
+     */
+    @Async("taskExecutor")
+    public void sendAccountDeletionConfirmation(String to, String username) {
+        long startTime = System.currentTimeMillis();
+
+        try {
+            log.info("📧 Sending account deletion confirmation to: {}", to);
+
+            String htmlContent = buildAccountDeletionEmail(username != null ? username : "there");
+
+            CreateEmailOptions params = CreateEmailOptions.builder()
+                    .from(fromEmail)
+                    .to(to)
+                    .subject("Account Deleted - We're Sorry to See You Go 👋")
+                    .html(htmlContent)
+                    .build();
+
+            CreateEmailResponse response = resendClient.emails().send(params);
+
+            long duration = System.currentTimeMillis() - startTime;
+            log.info("✅ Account deletion confirmation sent to: {} with ID: {} (took {}ms)",
+                     to, response.getId(), duration);
+
+        } catch (ResendException e) {
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("❌ Failed to send account deletion confirmation to: {} (took {}ms)", to, duration, e);
+            // Don't throw - confirmation email failure shouldn't break account deletion
+        }
+    }
+
+    /**
+     * Email template for account deletion confirmation
+     */
+    private String buildAccountDeletionEmail(String username) {
+        return """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            line-height: 1.6;
+                            background-color: #000;
+                            margin: 0;
+                            padding: 20px;
+                        }
+                        .container {
+                            max-width: 600px;
+                            margin: 20px auto;
+                            background: #111;
+                            border-radius: 10px;
+                            overflow: hidden;
+                            box-shadow: 0 0 30px rgba(255, 85, 85, 0.3);
+                            border: 2px solid #333;
+                        }
+                        .header {
+                            background: linear-gradient(135deg, #1a1a1a 0%%, #2a2a2a 100%%);
+                            color: #ff5555;
+                            padding: 30px 20px;
+                            text-align: center;
+                            border-bottom: 2px solid #ff5555;
+                        }
+                        .header h1 {
+                            margin: 0;
+                            font-size: 28px;
+                            text-shadow: 0 0 10px rgba(255, 85, 85, 0.5);
+                        }
+                        .content {
+                            padding: 40px 30px;
+                            color: #ddd;
+                        }
+                        .info-box {
+                            background: rgba(255, 193, 7, 0.1);
+                            border: 1px solid #ffc107;
+                            border-radius: 10px;
+                            padding: 20px;
+                            margin: 20px 0;
+                            color: #ffc107;
+                        }
+                        .footer {
+                            text-align: center;
+                            padding: 20px;
+                            background: #0a0a0a;
+                            color: #666;
+                            font-size: 12px;
+                        }
+                        strong {
+                            color: #ff5555;
+                        }
+                        .goodbye {
+                            text-align: center;
+                            font-size: 48px;
+                            margin: 20px 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>👋 Account Deleted</h1>
+                        </div>
+                        <div class="content">
+                            <p>Hi <strong>%s</strong>,</p>
+                            <div class="goodbye">💔</div>
+                            <p>Your <strong>Random Writes Random Lights</strong> account has been permanently deleted as requested.</p>
+                            <div class="info-box">
+                                <strong>What's been deleted:</strong><br>
+                                ✓ Your account information<br>
+                                ✓ All your saved notes and ideas<br>
+                                ✓ All verification tokens<br>
+                                ✓ All password reset tokens
+                            </div>
+                            <p>We're sorry to see you go! If you change your mind, you're always welcome to create a new account.</p>
+                            <p>Thank you for being part of our community. We hope Random Writes Random Lights helped capture your brilliant ideas! ✨</p>
+                            <p><em>If you didn't request this deletion, please contact our support team immediately.</em></p>
+                        </div>
+                        <div class="footer">
+                            <p>&copy; 2025 Random Writes Random Lights. All rights reserved.</p>
+                            <p>This is an automated email, please do not reply.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """.formatted(username);
+    }
 }

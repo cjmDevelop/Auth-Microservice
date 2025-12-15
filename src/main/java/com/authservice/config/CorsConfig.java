@@ -18,13 +18,14 @@ public class CorsConfig {
         config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedOrigin("http://localhost:5173");
         config.addAllowedOrigin("https://randomwritesrandomlights.com");
-        
-        // IMPORTANT: Allow cron services to ping health endpoints
-        config.addAllowedOriginPattern("*"); // Allows keep-alive services
-        
+
         config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        config.setAllowCredentials(false); // Changed from true for health endpoints
+        config.addAllowedMethod("GET");
+        config.addAllowedMethod("POST");
+        config.addAllowedMethod("PUT");
+        config.addAllowedMethod("DELETE");
+        config.addAllowedMethod("OPTIONS");
+        config.setAllowCredentials(true); // Required for JWT authentication
 
         // Register CORS for all endpoints (not just /api/**)
         source.registerCorsConfiguration("/**", config);

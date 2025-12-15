@@ -38,26 +38,36 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthFilter) throws Exception {
-        http.authorizeHttpRequests((authorize) -> authorize 
+        http.authorizeHttpRequests((authorize) -> authorize
                 // OPTIONS requests (CORS preflight)
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                
+
                 // Health check endpoints (for keep-alive, no auth needed)
                 .requestMatchers("/health", "/ping").permitAll()
-                
-                // Auth endpoints (public - login, register, password reset)
-                .requestMatchers("/api/auth/**").permitAll()
-                
+
+                // Protected auth endpoints (require authentication)
+                .requestMatchers(HttpMethod.DELETE, "/api/auth/account").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/auth/account/can-delete").authenticated()
+
+                // Public auth endpoints (no authentication needed)
+                .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/verify-email").permitAll()
+                .requestMatchers("/api/auth/password-reset/**").permitAll()
+
                 // Notes endpoints (protected - requires valid JWT)
                 .requestMatchers("/api/notes/**").authenticated()
-                
+
                 // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
+            // Enable CORS (uses CorsFilter bean from CorsConfig)
+            .cors(cors -> cors.configure(http))
+
             // CSRF disabled - safe for JWT-based APIs
             // (JWT in Authorization header = no CSRF risk)
             .csrf(csrf -> csrf.disable())
-            
+
             // Add JWT filter before Spring Security's default auth filter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

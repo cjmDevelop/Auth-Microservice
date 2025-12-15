@@ -53,6 +53,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/verify-email").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/resend-verification-email").permitAll()
 
                 // Password reset endpoints (no authentication needed)
                 .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()

@@ -16,7 +16,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*") // Allow all origins for development
 @RequiredArgsConstructor
 public class PasswordResetController {
 

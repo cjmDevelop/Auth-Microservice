@@ -35,13 +35,35 @@ public class AuthController {
     private final AccountDeletionService accountDeletionService;
 
     @PostMapping("/register")
-    public AuthResponseDto register(@RequestBody RegisterRequestDto request) {
-       return authService.register(request);
+    public ResponseEntity<?> register(@RequestBody RegisterRequestDto request) {
+        try {
+            AuthResponseDto response = authService.register(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Registration failed. Please try again.");
+            return ResponseEntity.internalServerError().body(error);
+        }
     }
 
     @PostMapping("/verify-email")
-    public AuthResponseDto verifyEmail(@RequestBody VerificationRequestDto verReqDto) {
-        return authService.verifyEmail(verReqDto);
+    public ResponseEntity<?> verifyEmail(@RequestBody VerificationRequestDto verReqDto) {
+        try {
+            AuthResponseDto response = authService.verifyEmail(verReqDto);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Email verification failed. Please try again.");
+            return ResponseEntity.internalServerError().body(error);
+        }
     }
 
     @PostMapping("/resend-verification-email")
@@ -65,14 +87,40 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public AuthResponseDto login(@RequestBody LoginRequestDto request) {
-        return authService.login(request);
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto request) {
+        try {
+            AuthResponseDto response = authService.login(request);
+            return ResponseEntity.ok(response);
+        } catch (org.springframework.security.authentication.BadCredentialsException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Invalid email or password");
+            return ResponseEntity.status(401).body(error);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Login failed. Please try again.");
+            return ResponseEntity.internalServerError().body(error);
+        }
     }
 
     @PostMapping("/refresh")
-    public AuthResponseDto refresh(@RequestBody Map<String, String> request) {
-        String refreshToken = request.get("refreshToken");
-        return authService.refreshAccessToken(refreshToken);
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> request) {
+        try {
+            String refreshToken = request.get("refreshToken");
+            AuthResponseDto response = authService.refreshAccessToken(refreshToken);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.status(401).body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Failed to refresh token. Please login again.");
+            return ResponseEntity.internalServerError().body(error);
+        }
     }
 
     // ==================== DELETE ACCOUNT ENDPOINTS ====================

@@ -157,13 +157,57 @@ public class AuthService {
 
         // Generating access & refresh JWT tokens
         String accessToken = jwtService.generateToken(user);
-        String refreshToken = jwtService.generateToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
 
         log.info("User logged in successfully: {}", user.getEmail());
 
         // Return tokens and user info
         return AuthResponseDto.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .tokenType("Bearer")
+                .expiresIn(jwtService.getExpirationTime())
+                .user(convertToDto(user))
+                .build();
+    }
+
+    /**
+     * Refresh access token using refresh token
+     *
+     * Flow:
+     * 1. Extract username from refresh token
+     * 2. Load user from database
+     * 3. Validate refresh token
+     * 4. Generate new access token
+     * 5. Return new access token with same refresh token
+     *
+     * @param refreshToken The refresh token
+     * @return AuthResponseDto with new access token
+     * @throws RuntimeException if refresh token is invalid or expired
+     */
+    public AuthResponseDto refreshAccessToken(String refreshToken) {
+        log.info("Attempting to refresh access token");
+
+        // Extract username from refresh token
+        String username = jwtService.extractUsername(refreshToken);
+
+        // Load user from database
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Validate refresh token
+        if (!jwtService.isTokenValid(refreshToken, user)) {
+            throw new RuntimeException("Invalid or expired refresh token");
+        }
+
+        // Generate new access token
+        String newAccessToken = jwtService.generateToken(user);
+
+        log.info("Access token refreshed successfully for: {}", user.getEmail());
+
+        // Return new access token with same refresh token
+        return AuthResponseDto.builder()
+                .accessToken(newAccessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtService.getExpirationTime())

@@ -69,6 +69,12 @@ public class AuthController {
         return authService.login(request);
     }
 
+    @PostMapping("/refresh")
+    public AuthResponseDto refresh(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        return authService.refreshAccessToken(refreshToken);
+    }
+
     // ==================== DELETE ACCOUNT ENDPOINTS ====================
 
     /**

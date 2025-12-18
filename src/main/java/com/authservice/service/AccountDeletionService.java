@@ -12,12 +12,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
  * Account Deletion Service
  *
- * Handles permanent account deletion with:
+ * Handles soft account deletion with:
  * - Password verification for security
  * - Complete data cleanup (notes, tokens, etc.)
+ * - User marked as deleted (allows email reuse)
  * - Confirmation email
  * - GDPR compliance
  */
@@ -34,14 +37,14 @@ public class AccountDeletionService {
     private final ResendEmailService emailService;
 
     /**
-     * Delete user account permanently
+     * Delete user account (soft delete)
      *
      * Steps:
      * 1. Verify password for security
      * 2. Delete all user's notes
      * 3. Delete all verification tokens
      * 4. Delete all password reset tokens
-     * 5. Delete user account
+     * 5. Mark user account as deleted (allows email reuse)
      * 6. Send confirmation email
      *
      * @param request Contains email, password, and optional reason
@@ -81,9 +84,12 @@ public class AccountDeletionService {
         passwordResetTokenRepository.deleteByUser(user);
         log.info("🔐 Deleted password reset tokens for user: {}", userEmail);
 
-        // Step 4: Delete user account
-        userRepository.delete(user);
-        log.info("✅ User account deleted: {}", userEmail);
+        // Step 4: Soft delete user account (mark as deleted, allows email reuse)
+        user.setDeleted(true);
+        user.setDeletedAt(LocalDateTime.now());
+        user.setEnabled(false);
+        userRepository.save(user);
+        log.info("✅ User account marked as deleted: {}", userEmail);
 
         // Step 5: Send confirmation email (async)
         emailService.sendAccountDeletionConfirmation(userEmail, userName);

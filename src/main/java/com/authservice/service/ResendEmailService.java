@@ -4,8 +4,13 @@ import com.resend.Resend;
 import com.resend.core.exception.ResendException;
 import com.resend.services.emails.model.CreateEmailOptions;
 import com.resend.services.emails.model.CreateEmailResponse;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -25,47 +30,100 @@ public class ResendEmailService {
 
     private final Resend resendClient;
     private final String fromEmail;
+    private final JavaMailSender mailSender;
+
+    @Value("${app.dev-mode:false}")
+    private boolean devMode;
+
+    @Value("${app.use-gmail:false}")
+    private boolean useGmail;
+
+    @Value("${spring.mail.username:}")
+    private String gmailUsername;
 
     public ResendEmailService(
             @Value("${resend.api-key}") String apiKey,
-            @Value("${resend.from-email}") String fromEmail
+            @Value("${resend.from-email}") String fromEmail,
+            @Autowired(required = false) JavaMailSender mailSender
     ) {
         this.resendClient = new Resend(apiKey);
         this.fromEmail = fromEmail;
-        log.info("✅ Resend Email Service initialized with from: {}", fromEmail);
+        this.mailSender = mailSender;
+        log.info("✅ Email Service initialized - From: {}", fromEmail);
     }
 
     /**
      * Send verification email with code to user
-     * 
+     *
      * @Async - Runs in background thread, doesn't block API response
      */
     @Async("taskExecutor")
     public void sendVerificationEmail(String to, String code, String name) {
         long startTime = System.currentTimeMillis();
-        
+
+        // DEV MODE: Skip sending email
+        if (devMode) {
+            log.warn("🔧 DEV MODE: Skipping verification email to: {} (Code: {})", to, code);
+            return;
+        }
+
+        String htmlContent = buildVerificationEmail(name != null ? name : "there", code);
+        String subject = "Verify Your Email Address - SY0-701 Quiz App";
+
+        // Use Gmail if configured
+        if (useGmail && mailSender != null) {
+            sendViaGmail(to, subject, htmlContent, startTime);
+            return;
+        }
+
+        // Otherwise use Resend
         try {
-            log.info("📧 Sending verification email to: {}", to);
-            
-            String htmlContent = buildVerificationEmail(name != null ? name : "there", code);
+            log.info("📧 Sending verification email to: {} via Resend", to);
 
             CreateEmailOptions params = CreateEmailOptions.builder()
                     .from(fromEmail)
                     .to(to)
-                    .subject("Verify Your Email Address - Random Writes Random Lights")
+                    .subject(subject)
                     .html(htmlContent)
                     .build();
 
             CreateEmailResponse response = resendClient.emails().send(params);
-            
+
             long duration = System.currentTimeMillis() - startTime;
-            log.info("✅ Verification email sent to: {} with ID: {} (took {}ms)", 
+            log.info("✅ Verification email sent to: {} with ID: {} (took {}ms)",
                      to, response.getId(), duration);
 
         } catch (ResendException e) {
             long duration = System.currentTimeMillis() - startTime;
             log.error("❌ Failed to send verification email to: {} (took {}ms)", to, duration, e);
             throw new RuntimeException("Failed to send verification email: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Helper method to send email via Gmail SMTP
+     */
+    private void sendViaGmail(String to, String subject, String htmlContent, long startTime) {
+        try {
+            log.info("📧 Sending email to: {} via Gmail SMTP", to);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(gmailUsername);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+
+            long duration = System.currentTimeMillis() - startTime;
+            log.info("✅ Email sent to: {} via Gmail (took {}ms)", to, duration);
+
+        } catch (MessagingException e) {
+            long duration = System.currentTimeMillis() - startTime;
+            log.error("❌ Failed to send email to: {} via Gmail (took {}ms)", to, duration, e);
+            throw new RuntimeException("Failed to send email via Gmail: " + e.getMessage(), e);
         }
     }
 
@@ -77,10 +135,16 @@ public class ResendEmailService {
     @Async("taskExecutor")
     public void sendWelcomeEmail(String to, String name) {
         long startTime = System.currentTimeMillis();
-        
+
+        // DEV MODE: Skip sending email
+        if (devMode) {
+            log.warn("🔧 DEV MODE: Skipping welcome email to: {}", to);
+            return;
+        }
+
         try {
             log.info("📧 Sending welcome email to: {}", to);
-            
+
             String htmlContent = buildWelcomeEmail(name != null ? name : "there");
 
             CreateEmailOptions params = CreateEmailOptions.builder()
@@ -91,9 +155,9 @@ public class ResendEmailService {
                     .build();
 
             CreateEmailResponse response = resendClient.emails().send(params);
-            
+
             long duration = System.currentTimeMillis() - startTime;
-            log.info("✅ Welcome email sent to: {} with ID: {} (took {}ms)", 
+            log.info("✅ Welcome email sent to: {} with ID: {} (took {}ms)",
                      to, response.getId(), duration);
 
         } catch (ResendException e) {
@@ -111,23 +175,37 @@ public class ResendEmailService {
     @Async("taskExecutor")
     public void sendPasswordResetEmail(String to, String username, String resetCode) {
         long startTime = System.currentTimeMillis();
-        
+
+        // DEV MODE: Skip sending email but log the code
+        if (devMode) {
+            log.warn("🔧 DEV MODE: Skipping password reset email to: {} (Reset Code: {})", to, resetCode);
+            return;
+        }
+
+        String htmlContent = buildPasswordResetEmail(username != null ? username : "there", resetCode);
+        String subject = "Reset Your Password - SY0-701 Quiz App 🔐";
+
+        // Use Gmail if configured
+        if (useGmail && mailSender != null) {
+            sendViaGmail(to, subject, htmlContent, startTime);
+            return;
+        }
+
+        // Otherwise use Resend
         try {
-            log.info("📧 Sending password reset email to: {}", to);
-            
-            String htmlContent = buildPasswordResetEmail(username != null ? username : "there", resetCode);
+            log.info("📧 Sending password reset email to: {} via Resend", to);
 
             CreateEmailOptions params = CreateEmailOptions.builder()
                     .from(fromEmail)
                     .to(to)
-                    .subject("Reset Your Password - Random Writes Random Lights 🔐")
+                    .subject(subject)
                     .html(htmlContent)
                     .build();
 
             CreateEmailResponse response = resendClient.emails().send(params);
-            
+
             long duration = System.currentTimeMillis() - startTime;
-            log.info("✅ Password reset email sent to: {} with ID: {} (took {}ms)", 
+            log.info("✅ Password reset email sent to: {} with ID: {} (took {}ms)",
                      to, response.getId(), duration);
 
         } catch (ResendException e) {
@@ -145,10 +223,16 @@ public class ResendEmailService {
     @Async("taskExecutor")
     public void sendPasswordChangedConfirmation(String to, String username) {
         long startTime = System.currentTimeMillis();
-        
+
+        // DEV MODE: Skip sending email
+        if (devMode) {
+            log.warn("🔧 DEV MODE: Skipping password changed confirmation to: {}", to);
+            return;
+        }
+
         try {
             log.info("📧 Sending password changed confirmation to: {}", to);
-            
+
             String htmlContent = buildPasswordChangedEmail(username != null ? username : "there");
 
             CreateEmailOptions params = CreateEmailOptions.builder()
@@ -159,9 +243,9 @@ public class ResendEmailService {
                     .build();
 
             CreateEmailResponse response = resendClient.emails().send(params);
-            
+
             long duration = System.currentTimeMillis() - startTime;
-            log.info("✅ Password changed confirmation sent to: {} with ID: {} (took {}ms)", 
+            log.info("✅ Password changed confirmation sent to: {} with ID: {} (took {}ms)",
                      to, response.getId(), duration);
 
         } catch (ResendException e) {
@@ -542,6 +626,12 @@ public class ResendEmailService {
     @Async("taskExecutor")
     public void sendAccountDeletionConfirmation(String to, String username) {
         long startTime = System.currentTimeMillis();
+
+        // DEV MODE: Skip sending email
+        if (devMode) {
+            log.warn("🔧 DEV MODE: Skipping account deletion confirmation to: {}", to);
+            return;
+        }
 
         try {
             log.info("📧 Sending account deletion confirmation to: {}", to);

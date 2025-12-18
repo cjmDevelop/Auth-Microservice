@@ -54,6 +54,8 @@ twilio:
 
 app:
   frontend-url: http://localhost:3000
+  dev-mode: ${DEV_MODE:false}  # Auto-verify users and skip emails when true
+  use-gmail: ${USE_GMAIL:false}  # Use Gmail SMTP instead of Resend for local testing
   verification:
     code-length: 6
     expiration-minutes: 15

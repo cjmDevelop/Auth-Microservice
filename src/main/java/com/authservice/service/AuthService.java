@@ -1,6 +1,7 @@
 package com.authservice.service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -59,6 +60,12 @@ public class AuthService {
     private int expirationMinutes;
 
     /**
+     * Development mode flag - auto-verifies users and skips email sending
+     */
+    @Value("${app.dev-mode:false}")
+    private boolean devMode;
+
+    /**
      * Register a new user account
      * 
      * Flow:
@@ -76,19 +83,43 @@ public class AuthService {
     public AuthResponseDto register(RegisterRequestDto requestDto) {
         log.info("Registering new user: {}", requestDto.getEmail());
 
-        // Checking if user already exist
-        if (userRepository.existsByEmail(requestDto.getEmail())) {
+        // Check if email exists and is NOT deleted
+        Optional<User> existingUser = userRepository.findByEmail(requestDto.getEmail());
+        if (existingUser.isPresent() && !existingUser.get().isDeleted()) {
             throw new RuntimeException("Email already registered");
         }
 
-        // Check if phone number exists
-        if (requestDto.getPhoneNumber() != null &&
-                userRepository.existsByPhoneNumber(requestDto.getPhoneNumber())) {
-            throw new RuntimeException("Phone number already registered");
+        // Check if phone number exists (and is not deleted)
+        if (requestDto.getPhoneNumber() != null) {
+            Optional<User> existingPhone = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
+            if (existingPhone.isPresent() && !existingPhone.get().isDeleted()) {
+                throw new RuntimeException("Phone number already registered");
+            }
         }
 
-        // Creating new user with encrypted password
-        User user = User.builder()
+        User user;
+
+        // If user exists but is deleted, we'll reactivate the account
+        if (existingUser.isPresent() && existingUser.get().isDeleted()) {
+            log.info("♻️ Reactivating deleted account for: {}", requestDto.getEmail());
+            user = existingUser.get();
+
+            // Reset the account with new data
+            user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+            user.setFirstName(requestDto.getFirstName());
+            user.setLastName(requestDto.getLastName());
+            user.setPhoneNumber(requestDto.getPhoneNumber());
+            user.setDeleted(false);
+            user.setDeletedAt(null);
+            user.setEmailVerified(false);
+            user.setPhoneVerified(false);
+            user.setEnabled(true);
+
+            user = userRepository.save(user);
+            log.info("✅ Account reactivated for: {}", user.getEmail());
+        } else {
+            // Creating new user with encrypted password
+            user = User.builder()
                 .email(requestDto.getEmail())
                 .password(passwordEncoder.encode(requestDto.getPassword()))
                 .firstName(requestDto.getFirstName())
@@ -96,15 +127,40 @@ public class AuthService {
                 .phoneNumber(requestDto.getPhoneNumber())
                 .role(Role.USER)
                 .emailVerified(false)
-                .phoneVerified(false) 
+                .phoneVerified(false)
                 .isEnabled(true)
                 .build();
 
-        // Saving user to database
-        user = userRepository.save(user);
-        log.info("User saved with ID: {}", user.getId());
+            // Saving user to database
+            user = userRepository.save(user);
+            log.info("User saved with ID: {}", user.getId());
+        }
 
-        // Generate and send email verification code
+        // DEV MODE: Auto-verify user and skip email
+        if (devMode) {
+            log.warn("🔧 DEV MODE: Auto-verifying user {} without email verification", user.getEmail());
+            user.setEmailVerified(true);
+            user = userRepository.save(user);
+
+            // Generate JWT tokens for immediate login
+            String accessToken = jwtService.generateToken(user);
+            String refreshToken = jwtService.generateRefreshToken(user);
+
+            UserDto userDto = convertToDto(user);
+
+            log.info("✅ DEV MODE: User {} auto-verified and logged in", user.getEmail());
+
+            // Return response WITH tokens (user can login immediately)
+            return AuthResponseDto.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .tokenType("Bearer")
+                    .expiresIn(jwtService.getExpirationTime())
+                    .user(userDto)
+                    .build();
+        }
+
+        // PRODUCTION MODE: Generate and send email verification code
         String verificationCode = generateVerificationCode();
         saveVerificationToken(user, verificationCode, VerificationToken.VerificationType.EMAIL);
 
@@ -148,9 +204,14 @@ public class AuthService {
                         request.getPassword()));
 
         // Instantiate 'user' object by finding user in database by email,
-        // will throw exception is user not found, or email is not verified.
+        // will throw exception is user not found, deleted, or email is not verified.
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.isDeleted()) {
+            throw new RuntimeException("Account has been deleted. Please register a new account.");
+        }
+
         if (!user.isEmailVerified()) {
             throw new RuntimeException("Email not verified. Please verify your email first.");
         }
@@ -195,6 +256,11 @@ public class AuthService {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Check if account is deleted
+        if (user.isDeleted()) {
+            throw new RuntimeException("Account has been deleted");
+        }
+
         // Validate refresh token
         if (!jwtService.isTokenValid(refreshToken, user)) {
             throw new RuntimeException("Invalid or expired refresh token");
@@ -238,6 +304,11 @@ public class AuthService {
         // Finding user
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if account is deleted
+        if (user.isDeleted()) {
+            throw new RuntimeException("Account has been deleted");
+        }
 
         // Find verification token
         VerificationToken token = tokenRepository.findByCodeAndUserAndType(
@@ -297,6 +368,10 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (user.isDeleted()) {
+            throw new RuntimeException("Account has been deleted");
+        }
+
         if (user.getPhoneNumber() == null) {
             throw new RuntimeException("Phone number not provided");
         }
@@ -324,6 +399,10 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        if (user.isDeleted()) {
+            throw new RuntimeException("Account has been deleted");
+        }
+
         VerificationToken token = tokenRepository
                 .findByCodeAndUserAndType(
                         request.getCode(), user,
@@ -350,7 +429,7 @@ public class AuthService {
 
     /**
          * Resend email verification code
-         * 
+         *
          * @param email - User's email
          * @throws RuntimeException if user not found or already verified
          */ @Transactional
@@ -360,13 +439,23 @@ public class AuthService {
                 User user = userRepository.findByEmail(email)
                             .orElseThrow(() -> new RuntimeException("User not found"));
 
+                if (user.isDeleted()) {
+                    throw new RuntimeException("Account has been deleted");
+                }
+
                 if(user.isEmailVerified()) {
                     throw new RuntimeException("Email already verified");
                 }
 
+                // DEV MODE: Skip resending email
+                if (devMode) {
+                    log.warn("🔧 DEV MODE: Skipping email resend for {}", email);
+                    return;
+                }
+
                 //Delete old tokens
                 tokenRepository.findByUserAndTypeAndVerifiedAtIsNull(
-                            user, 
+                            user,
                             VerificationToken.VerificationType.EMAIL
                             ).ifPresent(tokenRepository::delete);
 
@@ -376,9 +465,9 @@ public class AuthService {
 
                 //Resend email
                 emailService.sendVerificationEmail(user.getEmail(), verificationCode, user.getFirstName());
-           
+
                 log.info("Verification email resent to: {}", email);
-            
+
             }
 
     /**

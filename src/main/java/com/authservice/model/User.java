@@ -60,13 +60,23 @@ public class User implements UserDetails{
     private Role role;
 
     @Column(name = "email_verified")
+    @Builder.Default
     private boolean emailVerified = false;
 
     @Column(name = "phone_verified")
+    @Builder.Default
     private boolean phoneVerified = false;
 
     @Column(name = "is_enabled")
+    @Builder.Default
     private boolean isEnabled = true;
+
+    @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")
+    @Builder.Default
+    private boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

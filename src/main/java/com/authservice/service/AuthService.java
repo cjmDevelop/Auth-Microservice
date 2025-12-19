@@ -20,6 +20,7 @@ import com.authservice.repository.VerificationTokenRepository;
 
 import com.authservice.model.User;
 import com.authservice.model.Role;
+import com.authservice.model.AppSource;
 import com.authservice.model.VerificationToken;
 
 import jakarta.transaction.Transactional;
@@ -109,6 +110,7 @@ public class AuthService {
             user.setFirstName(requestDto.getFirstName());
             user.setLastName(requestDto.getLastName());
             user.setPhoneNumber(requestDto.getPhoneNumber());
+            user.setAppSource(requestDto.getAppSource() != null ? requestDto.getAppSource() : AppSource.RANDOM_WRITES);
             user.setDeleted(false);
             user.setDeletedAt(null);
             user.setEmailVerified(false);
@@ -126,6 +128,7 @@ public class AuthService {
                 .lastName(requestDto.getLastName())
                 .phoneNumber(requestDto.getPhoneNumber())
                 .role(Role.USER)
+                .appSource(requestDto.getAppSource() != null ? requestDto.getAppSource() : AppSource.RANDOM_WRITES)
                 .emailVerified(false)
                 .phoneVerified(false)
                 .isEnabled(true)

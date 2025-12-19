@@ -59,6 +59,11 @@ public class User implements UserDetails{
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "app_source", nullable = false)
+    @Builder.Default
+    private AppSource appSource = AppSource.RANDOM_WRITES;
+
     @Column(name = "email_verified")
     @Builder.Default
     private boolean emailVerified = false;

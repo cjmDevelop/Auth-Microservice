@@ -3,7 +3,7 @@ package com.authservice.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import com.authservice.model.AppSource;
 import com.authservice.service.ResendEmailService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class TestController {
 
     @GetMapping("/test/email")
     public String testEmailService() {
-        emailService.sendVerificationEmail("jr87.dev@gmail.com", "978462", "testName");
+        emailService.sendVerificationEmail("jr87.dev@gmail.com", "978462", "testName", AppSource.RANDOM_WRITES);
         return "Email sent!";
     }
     

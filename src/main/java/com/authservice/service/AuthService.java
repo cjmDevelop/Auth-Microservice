@@ -168,7 +168,8 @@ public class AuthService {
         emailService.sendVerificationEmail(
                 user.getEmail(),
                 verificationCode,
-                user.getFirstName());
+                user.getFirstName(),
+                user.getAppSource());
 
         // Convert User entity to DTO
         UserDto userDto = convertToDto(user);
@@ -339,7 +340,7 @@ public class AuthService {
         log.info("Email verified successfully for: {}", user.getEmail());
 
         // Sending Welcome email
-        emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());
+        emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName(), user.getAppSource());
 
         // Generating JWT tokens inorder for user to login
         String accessToken = jwtService.generateToken(user);
@@ -464,7 +465,7 @@ public class AuthService {
                 saveVerificationToken(user, verificationCode, VerificationToken.VerificationType.EMAIL);
 
                 //Resend email
-                emailService.sendVerificationEmail(user.getEmail(), verificationCode, user.getFirstName());
+                emailService.sendVerificationEmail(user.getEmail(), verificationCode, user.getFirstName(), user.getAppSource());
 
                 log.info("Verification email resent to: {}", email);
 

@@ -92,7 +92,7 @@ public class AccountDeletionService {
         log.info("✅ User account marked as deleted: {}", userEmail);
 
         // Step 5: Send confirmation email (async)
-        emailService.sendAccountDeletionConfirmation(userEmail, userName);
+        emailService.sendAccountDeletionConfirmation(userEmail, userName, user.getAppSource());
         log.info("📧 Account deletion confirmation email queued for: {}", userEmail);
 
         // Optional: Log deletion reason for analytics

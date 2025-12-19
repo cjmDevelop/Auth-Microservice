@@ -63,7 +63,7 @@ public class PasswordResetService {
 
         // Send email asynchronously (doesn't block API response)
         // The @Async annotation in ResendEmailService handles this
-        emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), code);
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), code, user.getAppSource());
         
         log.info("📧 Password reset email queued for: {}", email);
         // API returns immediately, email sends in background!
@@ -145,7 +145,7 @@ public class PasswordResetService {
         log.info("✅ Password reset successfully for: {}", email);
 
         // Send confirmation email asynchronously (doesn't block API response)
-        emailService.sendPasswordChangedConfirmation(user.getEmail(), user.getFirstName());
+        emailService.sendPasswordChangedConfirmation(user.getEmail(), user.getFirstName(), user.getAppSource());
         
         log.info("📧 Password changed confirmation queued for: {}", email);
         // API returns immediately, email sends in background!

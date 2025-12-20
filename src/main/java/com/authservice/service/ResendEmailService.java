@@ -40,7 +40,7 @@ public class ResendEmailService {
     private boolean useGmail;
 
     @Value("${spring.mail.username:}")
-    private String gmailUsername;
+    private String smtpUsername;
 
     public ResendEmailService(
             @Value("${resend.api-key}") String apiKey,
@@ -51,6 +51,15 @@ public class ResendEmailService {
         this.fromEmail = fromEmail;
         this.mailSender = mailSender;
         log.info("✅ Email Service initialized - From: {}", fromEmail);
+    }
+
+    /**
+     * Get the correct "from" email address based on the app source
+     */
+    private String getFromEmailForSource(AppSource appSource) {
+        return appSource == AppSource.SECPLUS_PREP
+            ? "noreply@secplus-prep.com"
+            : fromEmail;
     }
 
     /**
@@ -73,18 +82,24 @@ public class ResendEmailService {
             ? "Verify Your Email Address - SecPlus Prep"
             : "Verify Your Email Address - Random Writes Random Lights";
 
-        // Use Gmail if configured
-        if (useGmail && mailSender != null) {
-            sendViaGmail(to, subject, htmlContent, startTime);
+        // Route email based on app source
+        // SecPlus Prep uses Amazon SES SMTP
+        // Random Writes uses Resend API
+        if (appSource == AppSource.SECPLUS_PREP && mailSender != null) {
+            sendViaSMTP(to, subject, htmlContent, startTime, "noreply@secplus-prep.com");
+            return;
+        } else if (useGmail && mailSender != null) {
+            // Legacy Gmail support for testing
+            sendViaSMTP(to, subject, htmlContent, startTime, smtpUsername);
             return;
         }
 
-        // Otherwise use Resend
+        // Otherwise use Resend API (for Random Writes)
         try {
             log.info("📧 Sending verification email to: {} via Resend", to);
 
             CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from(fromEmail)
+                    .from(getFromEmailForSource(appSource))
                     .to(to)
                     .subject(subject)
                     .html(htmlContent)
@@ -104,16 +119,17 @@ public class ResendEmailService {
     }
 
     /**
-     * Helper method to send email via Gmail SMTP
+     * Helper method to send email via SMTP (Amazon SES or Gmail)
      */
-    private void sendViaGmail(String to, String subject, String htmlContent, long startTime) {
+    private void sendViaSMTP(String to, String subject, String htmlContent, long startTime, String fromEmail) {
         try {
-            log.info("📧 Sending email to: {} via Gmail SMTP", to);
+            String smtpProvider = fromEmail.contains("secplus-prep") ? "Amazon SES" : "SMTP";
+            log.info("📧 Sending email to: {} via {}", to, smtpProvider);
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(gmailUsername);
+            helper.setFrom(fromEmail);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
@@ -121,12 +137,12 @@ public class ResendEmailService {
             mailSender.send(message);
 
             long duration = System.currentTimeMillis() - startTime;
-            log.info("✅ Email sent to: {} via Gmail (took {}ms)", to, duration);
+            log.info("✅ Email sent to: {} via {} (took {}ms)", to, smtpProvider, duration);
 
         } catch (MessagingException e) {
             long duration = System.currentTimeMillis() - startTime;
-            log.error("❌ Failed to send email to: {} via Gmail (took {}ms)", to, duration, e);
-            throw new RuntimeException("Failed to send email via Gmail: " + e.getMessage(), e);
+            log.error("❌ Failed to send email to: {} via SMTP (took {}ms)", to, duration, e);
+            throw new RuntimeException("Failed to send email via SMTP: " + e.getMessage(), e);
         }
     }
 
@@ -154,7 +170,7 @@ public class ResendEmailService {
                 : "Welcome to Random Writes Random Lights! 🎉";
 
             CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from(fromEmail)
+                    .from(getFromEmailForSource(appSource))
                     .to(to)
                     .subject(subject)
                     .html(htmlContent)
@@ -193,18 +209,24 @@ public class ResendEmailService {
             ? "Reset Your Password - SecPlus Prep 🔐"
             : "Reset Your Password - Random Writes Random Lights 🔐";
 
-        // Use Gmail if configured
-        if (useGmail && mailSender != null) {
-            sendViaGmail(to, subject, htmlContent, startTime);
+        // Route email based on app source
+        // SecPlus Prep uses Amazon SES SMTP
+        // Random Writes uses Resend API
+        if (appSource == AppSource.SECPLUS_PREP && mailSender != null) {
+            sendViaSMTP(to, subject, htmlContent, startTime, "noreply@secplus-prep.com");
+            return;
+        } else if (useGmail && mailSender != null) {
+            // Legacy Gmail support for testing
+            sendViaSMTP(to, subject, htmlContent, startTime, smtpUsername);
             return;
         }
 
-        // Otherwise use Resend
+        // Otherwise use Resend API (for Random Writes)
         try {
             log.info("📧 Sending password reset email to: {} via Resend", to);
 
             CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from(fromEmail)
+                    .from(getFromEmailForSource(appSource))
                     .to(to)
                     .subject(subject)
                     .html(htmlContent)
@@ -244,7 +266,7 @@ public class ResendEmailService {
             String htmlContent = buildPasswordChangedEmail(username != null ? username : "there", appSource);
 
             CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from(fromEmail)
+                    .from(getFromEmailForSource(appSource))
                     .to(to)
                     .subject("Password Changed Successfully ✅")
                     .html(htmlContent)
@@ -1062,7 +1084,7 @@ public class ResendEmailService {
             String htmlContent = buildAccountDeletionEmail(username != null ? username : "there", appSource);
 
             CreateEmailOptions params = CreateEmailOptions.builder()
-                    .from(fromEmail)
+                    .from(getFromEmailForSource(appSource))
                     .to(to)
                     .subject("Account Deleted - We're Sorry to See You Go 👋")
                     .html(htmlContent)

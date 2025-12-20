@@ -84,17 +84,21 @@ public class AuthService {
     public AuthResponseDto register(RegisterRequestDto requestDto) {
         log.info("Registering new user: {}", requestDto.getEmail());
 
-        // Check if email exists and is NOT deleted
-        Optional<User> existingUser = userRepository.findByEmail(requestDto.getEmail());
+        // Determine the app source (from request or default)
+        AppSource appSource = requestDto.getAppSource() != null ? requestDto.getAppSource() : AppSource.RANDOM_WRITES;
+        log.info("Registration for app: {}", appSource);
+
+        // Check if email exists for THIS APP and is NOT deleted
+        Optional<User> existingUser = userRepository.findByEmailAndAppSource(requestDto.getEmail(), appSource);
         if (existingUser.isPresent() && !existingUser.get().isDeleted()) {
-            throw new RuntimeException("Email already registered");
+            throw new RuntimeException("Email already registered for this application");
         }
 
-        // Check if phone number exists (and is not deleted)
+        // Check if phone number exists for THIS APP (and is not deleted)
         if (requestDto.getPhoneNumber() != null) {
-            Optional<User> existingPhone = userRepository.findByPhoneNumber(requestDto.getPhoneNumber());
+            Optional<User> existingPhone = userRepository.findByPhoneNumberAndAppSource(requestDto.getPhoneNumber(), appSource);
             if (existingPhone.isPresent() && !existingPhone.get().isDeleted()) {
-                throw new RuntimeException("Phone number already registered");
+                throw new RuntimeException("Phone number already registered for this application");
             }
         }
 
@@ -110,7 +114,7 @@ public class AuthService {
             user.setFirstName(requestDto.getFirstName());
             user.setLastName(requestDto.getLastName());
             user.setPhoneNumber(requestDto.getPhoneNumber());
-            user.setAppSource(requestDto.getAppSource() != null ? requestDto.getAppSource() : AppSource.RANDOM_WRITES);
+            user.setAppSource(appSource);
             user.setDeleted(false);
             user.setDeletedAt(null);
             user.setEmailVerified(false);
@@ -128,7 +132,7 @@ public class AuthService {
                 .lastName(requestDto.getLastName())
                 .phoneNumber(requestDto.getPhoneNumber())
                 .role(Role.USER)
-                .appSource(requestDto.getAppSource() != null ? requestDto.getAppSource() : AppSource.RANDOM_WRITES)
+                .appSource(appSource)
                 .emailVerified(false)
                 .phoneVerified(false)
                 .isEnabled(true)

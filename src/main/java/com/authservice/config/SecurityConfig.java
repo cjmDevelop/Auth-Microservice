@@ -62,9 +62,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/resend-reset-code").permitAll()
 
-                // TEMPORARY: Migration endpoints (DELETE AFTER USE!)
-                .requestMatchers("/api/migration/**").permitAll()
-
                 // Notes endpoints (protected - requires valid JWT)
                 .requestMatchers("/api/notes/**").authenticated()
 

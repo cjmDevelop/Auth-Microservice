@@ -54,8 +54,9 @@ public class PasswordResetController {
     public ResponseEntity<?> verifyResetCode(@Valid @RequestBody PasswordResetVerifyDto request) {
         try {
             boolean isValid = passwordResetService.verifyResetCode(
-                request.getEmail(), 
-                request.getCode()
+                request.getEmail(),
+                request.getCode(),
+                request.getAppSource()
             );
             
             if (isValid) {
@@ -85,7 +86,8 @@ public class PasswordResetController {
             passwordResetService.resetPassword(
                 request.getEmail(),
                 request.getCode(),
-                request.getNewPassword()
+                request.getNewPassword(),
+                request.getAppSource()
             );
             
             Map<String, String> response = new HashMap<>();

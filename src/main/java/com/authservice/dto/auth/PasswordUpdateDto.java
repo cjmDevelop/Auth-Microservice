@@ -23,6 +23,8 @@ public class PasswordUpdateDto {
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String newPassword;
 
+    private String appSource; // Optional: for multi-app support
+
     public PasswordUpdateDto() {}
 
     public PasswordUpdateDto(String email, String code, String newPassword) {
@@ -53,5 +55,13 @@ public class PasswordUpdateDto {
 
     public void setNewPassword(String newPassword) {
         this.newPassword = newPassword;
+    }
+
+    public String getAppSource() {
+        return appSource;
+    }
+
+    public void setAppSource(String appSource) {
+        this.appSource = appSource;
     }
 }

@@ -24,4 +24,6 @@ public class PasswordResetVerifyDto {
     @Size(min = 6, max = 6, message = "Code must be 6 digits")
     @Pattern(regexp = "^[0-9]{6}$", message = "Code must be 6 digits")
     private String code;
+
+    private String appSource; // Optional: for multi-app support
 }

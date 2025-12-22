@@ -84,11 +84,24 @@ public class PasswordResetService {
     /**
      * Step 2: Verify the reset code user entered
      */
-    public boolean verifyResetCode(String email, String code) {
-        log.info("🔍 Verifying reset code for: {}", email);
-        
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
+    public boolean verifyResetCode(String email, String code, String appSourceStr) {
+        log.info("🔍 Verifying reset code for: {} (app: {})", email, appSourceStr);
+
+        // Find user by email and appSource
+        User user;
+        if (appSourceStr != null && !appSourceStr.isEmpty()) {
+            try {
+                com.authservice.model.AppSource appSource = com.authservice.model.AppSource.valueOf(appSourceStr);
+                user = userRepository.findByEmailAndAppSource(email, appSource)
+                        .orElseThrow(() -> new IllegalArgumentException("No account found with this email for this application"));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid app source: " + appSourceStr);
+            }
+        } else {
+            // Backwards compatibility: if no appSource provided, use email only
+            user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
+        }
 
         PasswordResetToken resetToken = passwordResetTokenRepository
             .findByUserAndCode(user, code)
@@ -118,15 +131,28 @@ public class PasswordResetService {
 
     /**
      * Step 3: Reset the password after code is verified
-     * 
+     *
      * OPTIMIZED: Confirmation email is sent asynchronously
      */
     @Transactional
-    public void resetPassword(String email, String code, String newPassword) {
-        log.info("🔐 Resetting password for: {}", email);
-        
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
+    public void resetPassword(String email, String code, String newPassword, String appSourceStr) {
+        log.info("🔐 Resetting password for: {} (app: {})", email, appSourceStr);
+
+        // Find user by email and appSource
+        User user;
+        if (appSourceStr != null && !appSourceStr.isEmpty()) {
+            try {
+                com.authservice.model.AppSource appSource = com.authservice.model.AppSource.valueOf(appSourceStr);
+                user = userRepository.findByEmailAndAppSource(email, appSource)
+                        .orElseThrow(() -> new IllegalArgumentException("No account found with this email for this application"));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Invalid app source: " + appSourceStr);
+            }
+        } else {
+            // Backwards compatibility: if no appSource provided, use email only
+            user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("No account found with this email"));
+        }
 
         PasswordResetToken resetToken = passwordResetTokenRepository
             .findByUserAndCode(user, code)

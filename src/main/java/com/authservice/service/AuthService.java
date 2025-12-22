@@ -203,7 +203,7 @@ public class AuthService {
      * @throws RuntimeException
      */
     public AuthResponseDto login(LoginRequestDto request) {
-        log.info("Login attempt for user: {}", request.getEmail());
+        log.info("Login attempt for user: {} (app: {})", request.getEmail(), request.getAppSource());
 
         // Authenticating user, incorrect credentials should throw an exception
         authenticationManager.authenticate(
@@ -211,10 +211,21 @@ public class AuthService {
                         request.getEmail(),
                         request.getPassword()));
 
-        // Instantiate 'user' object by finding user in database by email,
-        // will throw exception is user not found, deleted, or email is not verified.
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        // Instantiate 'user' object by finding user in database by email and appSource
+        User user;
+        if (request.getAppSource() != null && !request.getAppSource().isEmpty()) {
+            try {
+                AppSource appSource = AppSource.valueOf(request.getAppSource());
+                user = userRepository.findByEmailAndAppSource(request.getEmail(), appSource)
+                        .orElseThrow(() -> new RuntimeException("User not found for this application"));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid app source: " + request.getAppSource());
+            }
+        } else {
+            // Backwards compatibility: if no appSource provided, use email only
+            user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        }
 
         if (user.isDeleted()) {
             throw new RuntimeException("Account has been deleted. Please register a new account.");
@@ -307,11 +318,23 @@ public class AuthService {
      */
     @Transactional
     public AuthResponseDto verifyEmail(VerificationRequestDto request) {
-        log.info("Email verification attempt for: {}", request.getEmail());
+        log.info("Email verification attempt for: {} (app: {})", request.getEmail(), request.getAppSource());
 
-        // Finding user
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        // Finding user by email and appSource
+        User user;
+        if (request.getAppSource() != null && !request.getAppSource().isEmpty()) {
+            try {
+                AppSource appSource = AppSource.valueOf(request.getAppSource());
+                user = userRepository.findByEmailAndAppSource(request.getEmail(), appSource)
+                        .orElseThrow(() -> new RuntimeException("User not found for this application"));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid app source: " + request.getAppSource());
+            }
+        } else {
+            // Backwards compatibility: if no appSource provided, use email only
+            user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        }
 
         // Check if account is deleted
         if (user.isDeleted()) {

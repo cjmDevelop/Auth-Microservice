@@ -17,11 +17,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VerificationRequestDto {
-    
+
     @NotBlank(message = "Verification code is required")
     private String code;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
+
+    private String appSource; // Optional: for multi-app support
 }

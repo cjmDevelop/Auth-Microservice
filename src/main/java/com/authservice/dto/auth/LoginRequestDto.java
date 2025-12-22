@@ -18,11 +18,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginRequestDto {
-    
+
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
 
     @NotBlank(message = "Password is required")
     private String password;
+
+    private String appSource; // Optional: for multi-app support
 }

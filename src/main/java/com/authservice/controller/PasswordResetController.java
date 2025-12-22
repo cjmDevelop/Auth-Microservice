@@ -28,7 +28,7 @@ public class PasswordResetController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> requestPasswordReset(@Valid @RequestBody PasswordResetRequestDto request) {
         try {
-            passwordResetService.initiatePasswordReset(request.getEmail());
+            passwordResetService.initiatePasswordReset(request.getEmail(), request.getAppSource());
             
             Map<String, String> response = new HashMap<>();
             response.put("message", "Password reset code sent to your email");
@@ -110,7 +110,7 @@ public class PasswordResetController {
     @PostMapping("/resend-reset-code")
     public ResponseEntity<?> resendResetCode(@Valid @RequestBody PasswordResetRequestDto request) {
         try {
-            passwordResetService.resendResetCode(request.getEmail());
+            passwordResetService.resendResetCode(request.getEmail(), request.getAppSource());
             
             Map<String, String> response = new HashMap<>();
             response.put("message", "Reset code resent to your email");

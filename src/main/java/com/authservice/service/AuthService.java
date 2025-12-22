@@ -439,13 +439,27 @@ public class AuthService {
          * Resend email verification code
          *
          * @param email - User's email
+         * @param appSourceStr - Application source string (optional, for backwards compatibility)
          * @throws RuntimeException if user not found or already verified
          */ @Transactional
-            public void resendEmailVerification(String email) {
-                log.info("Resending email verification to: {}", email);
+            public void resendEmailVerification(String email, String appSourceStr) {
+                log.info("Resending email verification to: {} for app: {}", email, appSourceStr);
 
-                User user = userRepository.findByEmail(email)
+                // Find user by email and appSource (if provided)
+                User user;
+                if (appSourceStr != null && !appSourceStr.isEmpty()) {
+                    try {
+                        AppSource appSource = AppSource.valueOf(appSourceStr);
+                        user = userRepository.findByEmailAndAppSource(email, appSource)
+                                .orElseThrow(() -> new RuntimeException("User not found for this application"));
+                    } catch (IllegalArgumentException e) {
+                        throw new RuntimeException("Invalid app source: " + appSourceStr);
+                    }
+                } else {
+                    // Backwards compatibility: if no appSource provided, use email only
+                    user = userRepository.findByEmail(email)
                             .orElseThrow(() -> new RuntimeException("User not found"));
+                }
 
                 if (user.isDeleted()) {
                     throw new RuntimeException("Account has been deleted");

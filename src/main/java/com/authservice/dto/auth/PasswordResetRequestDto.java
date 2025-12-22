@@ -17,4 +17,6 @@ public class PasswordResetRequestDto {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
+
+    private String appSource; // Optional: defaults to null for backwards compatibility
 }

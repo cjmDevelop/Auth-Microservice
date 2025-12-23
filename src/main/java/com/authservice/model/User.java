@@ -82,13 +82,6 @@ public class User implements UserDetails{
     @Builder.Default
     private boolean isEnabled = true;
 
-    @Column(name = "is_deleted", nullable = false, columnDefinition = "boolean default false")
-    @Builder.Default
-    private boolean isDeleted = false;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

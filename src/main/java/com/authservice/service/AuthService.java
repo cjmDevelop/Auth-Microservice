@@ -204,10 +204,6 @@ public class AuthService {
                     .orElseThrow(() -> new RuntimeException("User not found"));
         }
 
-        if (user.isDeleted()) {
-            throw new RuntimeException("Account has been deleted. Please register a new account.");
-        }
-
         if (!user.isEmailVerified()) {
             throw new RuntimeException("Email not verified. Please verify your email first.");
         }
@@ -251,11 +247,6 @@ public class AuthService {
         // Load user from database
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Check if account is deleted
-        if (user.isDeleted()) {
-            throw new RuntimeException("Account has been deleted");
-        }
 
         // Validate refresh token
         if (!jwtService.isTokenValid(refreshToken, user)) {
@@ -311,11 +302,6 @@ public class AuthService {
             // Backwards compatibility: if no appSource provided, use email only
             user = userRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new RuntimeException("User not found"));
-        }
-
-        // Check if account is deleted
-        if (user.isDeleted()) {
-            throw new RuntimeException("Account has been deleted");
         }
 
         // Find verification token
@@ -376,10 +362,6 @@ public class AuthService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (user.isDeleted()) {
-            throw new RuntimeException("Account has been deleted");
-        }
-
         if (user.getPhoneNumber() == null) {
             throw new RuntimeException("Phone number not provided");
         }
@@ -406,10 +388,6 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.isDeleted()) {
-            throw new RuntimeException("Account has been deleted");
-        }
 
         VerificationToken token = tokenRepository
                 .findByCodeAndUserAndType(
@@ -459,10 +437,6 @@ public class AuthService {
                     // Backwards compatibility: if no appSource provided, use email only
                     user = userRepository.findByEmail(email)
                             .orElseThrow(() -> new RuntimeException("User not found"));
-                }
-
-                if (user.isDeleted()) {
-                    throw new RuntimeException("Account has been deleted");
                 }
 
                 if(user.isEmailVerified()) {

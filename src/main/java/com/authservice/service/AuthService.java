@@ -88,60 +88,37 @@ public class AuthService {
         AppSource appSource = requestDto.getAppSource() != null ? requestDto.getAppSource() : AppSource.RANDOM_WRITES;
         log.info("Registration for app: {}", appSource);
 
-        // Check if email exists for THIS APP and is NOT deleted
+        // Check if email exists for THIS APP
         Optional<User> existingUser = userRepository.findByEmailAndAppSource(requestDto.getEmail(), appSource);
-        if (existingUser.isPresent() && !existingUser.get().isDeleted()) {
+        if (existingUser.isPresent()) {
             throw new RuntimeException("Email already registered for this application");
         }
 
-        // Check if phone number exists for THIS APP (and is not deleted)
+        // Check if phone number exists for THIS APP
         if (requestDto.getPhoneNumber() != null) {
             Optional<User> existingPhone = userRepository.findByPhoneNumberAndAppSource(requestDto.getPhoneNumber(), appSource);
-            if (existingPhone.isPresent() && !existingPhone.get().isDeleted()) {
+            if (existingPhone.isPresent()) {
                 throw new RuntimeException("Phone number already registered for this application");
             }
         }
 
-        User user;
+        // Creating new user with encrypted password
+        User user = User.builder()
+            .email(requestDto.getEmail())
+            .password(passwordEncoder.encode(requestDto.getPassword()))
+            .firstName(requestDto.getFirstName())
+            .lastName(requestDto.getLastName())
+            .phoneNumber(requestDto.getPhoneNumber())
+            .role(Role.USER)
+            .appSource(appSource)
+            .emailVerified(false)
+            .phoneVerified(false)
+            .isEnabled(true)
+            .build();
 
-        // If user exists but is deleted, we'll reactivate the account
-        if (existingUser.isPresent() && existingUser.get().isDeleted()) {
-            log.info("♻️ Reactivating deleted account for: {}", requestDto.getEmail());
-            user = existingUser.get();
-
-            // Reset the account with new data
-            user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
-            user.setFirstName(requestDto.getFirstName());
-            user.setLastName(requestDto.getLastName());
-            user.setPhoneNumber(requestDto.getPhoneNumber());
-            user.setAppSource(appSource);
-            user.setDeleted(false);
-            user.setDeletedAt(null);
-            user.setEmailVerified(false);
-            user.setPhoneVerified(false);
-            user.setEnabled(true);
-
-            user = userRepository.save(user);
-            log.info("✅ Account reactivated for: {}", user.getEmail());
-        } else {
-            // Creating new user with encrypted password
-            user = User.builder()
-                .email(requestDto.getEmail())
-                .password(passwordEncoder.encode(requestDto.getPassword()))
-                .firstName(requestDto.getFirstName())
-                .lastName(requestDto.getLastName())
-                .phoneNumber(requestDto.getPhoneNumber())
-                .role(Role.USER)
-                .appSource(appSource)
-                .emailVerified(false)
-                .phoneVerified(false)
-                .isEnabled(true)
-                .build();
-
-            // Saving user to database
-            user = userRepository.save(user);
-            log.info("User saved with ID: {}", user.getId());
-        }
+        // Saving user to database
+        user = userRepository.save(user);
+        log.info("User saved with ID: {}", user.getId());
 
         // DEV MODE: Auto-verify user and skip email
         if (devMode) {

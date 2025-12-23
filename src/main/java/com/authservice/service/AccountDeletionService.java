@@ -1,26 +1,22 @@
 package com.authservice.service;
 
 import com.authservice.dto.auth.AccountDeletionDto;
+import com.authservice.model.AppSource;
 import com.authservice.model.User;
-import com.authservice.repository.NoteRepository;
-import com.authservice.repository.PasswordResetTokenRepository;
 import com.authservice.repository.UserRepository;
-import com.authservice.repository.VerificationTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 /**
  * Account Deletion Service
  *
- * Handles soft account deletion with:
+ * Handles permanent account deletion with:
  * - Password verification for security
- * - Complete data cleanup (notes, tokens, etc.)
- * - User marked as deleted (allows email reuse)
+ * - Complete data cleanup via cascade delete (notes, tokens, quiz results, etc.)
+ * - User completely removed from database (allows email reuse for new signups)
  * - Confirmation email
  * - GDPR compliance
  */
@@ -30,25 +26,21 @@ import java.time.LocalDateTime;
 public class AccountDeletionService {
 
     private final UserRepository userRepository;
-    private final NoteRepository noteRepository;
-    private final VerificationTokenRepository verificationTokenRepository;
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final ResendEmailService emailService;
 
     /**
-     * Delete user account (soft delete)
+     * Delete user account permanently (hard delete)
      *
      * Steps:
      * 1. Verify password for security
-     * 2. Delete all user's notes
-     * 3. Delete all verification tokens
-     * 4. Delete all password reset tokens
-     * 5. Mark user account as deleted (allows email reuse)
-     * 6. Send confirmation email
+     * 2. Save user info for confirmation email
+     * 3. Log deletion reason if provided
+     * 4. Permanently delete user (cascade delete removes all related data)
+     * 5. Send confirmation email
      *
      * @param request Contains email, password, and optional reason
-     * @throws IllegalArgumentException if password is incorrect
+     * @throws IllegalArgumentException if password is incorrect or user not found
      */
     @Transactional
     public void deleteAccount(AccountDeletionDto request) {
@@ -64,41 +56,29 @@ public class AccountDeletionService {
             throw new IllegalArgumentException("Invalid password");
         }
 
+        // Save user info before deletion (needed for email)
         String userName = user.getFirstName();
         String userEmail = user.getEmail();
+        AppSource appSource = user.getAppSource();
+        Long userId = user.getId();
 
-        // Step 1: Delete all user's notes
-        int notesDeleted = noteRepository.findByUserId(user.getId()).size();
-        noteRepository.deleteAll(noteRepository.findByUserId(user.getId()));
-        log.info("📝 Deleted {} notes for user: {}", notesDeleted, userEmail);
-
-        // Step 2: Delete all verification tokens
-        verificationTokenRepository.deleteAll(
-            verificationTokenRepository.findAll().stream()
-                .filter(token -> token.getUser().getId().equals(user.getId()))
-                .toList()
-        );
-        log.info("🔑 Deleted verification tokens for user: {}", userEmail);
-
-        // Step 3: Delete all password reset tokens
-        passwordResetTokenRepository.deleteByUser(user);
-        log.info("🔐 Deleted password reset tokens for user: {}", userEmail);
-
-        // Step 4: Soft delete user account (mark as deleted, allows email reuse)
-        user.setDeleted(true);
-        user.setDeletedAt(LocalDateTime.now());
-        user.setEnabled(false);
-        userRepository.save(user);
-        log.info("✅ User account marked as deleted: {}", userEmail);
-
-        // Step 5: Send confirmation email (async)
-        emailService.sendAccountDeletionConfirmation(userEmail, userName, user.getAppSource());
-        log.info("📧 Account deletion confirmation email queued for: {}", userEmail);
-
-        // Optional: Log deletion reason for analytics
+        // Optional: Log deletion reason for analytics (before deletion)
         if (request.getReason() != null && !request.getReason().isBlank()) {
-            log.info("📊 Deletion reason: {}", request.getReason());
+            log.info("📊 Deletion reason for {}: {}", userEmail, request.getReason());
         }
+
+        // HARD DELETE: Permanently remove user and all related data
+        // Cascade delete will automatically remove:
+        // - All notes
+        // - All verification tokens
+        // - All password reset tokens
+        // - All quiz results
+        userRepository.delete(user);
+        log.info("✅ User account permanently deleted: {} (ID: {})", userEmail, userId);
+
+        // Send confirmation email (async)
+        emailService.sendAccountDeletionConfirmation(userEmail, userName, appSource);
+        log.info("📧 Account deletion confirmation email queued for: {}", userEmail);
     }
 
     /**

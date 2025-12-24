@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.authservice.model.User;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -54,7 +56,16 @@ public class JWTService {
    * @param token
    * @return The user's email address stored in the token
    */public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject); 
+        return extractClaim(token, Claims::getSubject);
+    }
+
+  /**
+   * Extract appSource from a JWT token
+   * @param token
+   * @return The appSource value stored in the token, or null if not present
+   */public String extractAppSource(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("appSource", String.class);
     }
 
   /**
@@ -77,10 +88,19 @@ public class JWTService {
     /**
      * Generates a basic JWT token with no extra claims
      * Only includes username and standard fields (issued time, expiry)
+     * IMPORTANT: Also includes appSource to support multi-app architecture
      * @param userDetails
-     * @return calls the overloaded version below with an empty HashMap
+     * @return calls the overloaded version below with appSource claim
      */public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        Map<String, Object> claims = new HashMap<>();
+
+        // Add appSource to JWT claims if user is a User instance
+        if (userDetails instanceof User) {
+            User user = (User) userDetails;
+            claims.put("appSource", user.getAppSource().name());
+        }
+
+        return generateToken(claims, userDetails);
     }
 
     /**
@@ -96,11 +116,19 @@ public class JWTService {
     /**
      * Generate a refresh token (lives longer than access token)
      * Used to get new access tokens without making user login again
-     * No extra claims needed, just username and long expiry
+     * Includes appSource for multi-app support
      * @param userDetails
      * @return refresh token
      */ public String generateRefreshToken(UserDetails userDetails) {
-        return buildToken(new HashMap<>(), userDetails, refreshExpiration);
+        Map<String, Object> claims = new HashMap<>();
+
+        // Add appSource to refresh token claims
+        if (userDetails instanceof User) {
+            User user = (User) userDetails;
+            claims.put("appSource", user.getAppSource().name());
+        }
+
+        return buildToken(claims, userDetails, refreshExpiration);
     }
 
     /**

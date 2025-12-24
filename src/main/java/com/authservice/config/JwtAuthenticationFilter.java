@@ -77,10 +77,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt = authHeader.substring(7);
 
         /**
-         * Step 4: Extract username (email) from JWT token
-         * JWTService decodes the token and gets the "subject" (username)
+         * Step 4: Extract username (email) and appSource from JWT token
+         * JWTService decodes the token and gets the "subject" (username) and custom claims
          */
         final String userEmail = jwtService.extractUsername(jwt);
+        final String appSource = jwtService.extractAppSource(jwt);
 
         /**
          * Step 5: Check if we have a username and user is not already authenticated
@@ -90,10 +91,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             /**
-             * Step 6: Load user details from database using email
+             * Step 6: Load user details from database using email and appSource
+             * Construct username as "email|appSource" for multi-app support
              * This calls CustomUserDetailsService.loadUserByUsername()
              */
-            UserDetails userdetails = this.userDetailsService.loadUserByUsername(userEmail);
+            String username = (appSource != null) ? userEmail + "|" + appSource : userEmail;
+            System.out.println("🔍 Loading user: " + username);
+            UserDetails userdetails = this.userDetailsService.loadUserByUsername(username);
 
             /**
              * Step 7: Validate the JWT token for this user

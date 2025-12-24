@@ -8,6 +8,8 @@ import com.authservice.repository.QuizResultRepository;
 import com.authservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,14 +28,32 @@ public class QuizResultService {
     private final UserRepository userRepository;
 
     /**
+     * Get current authenticated user from SecurityContext
+     * FIXED: Now properly handles multi-app support by using the User principal
+     */
+    private User getCurrentAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof User) {
+            return (User) principal;
+        }
+
+        // Fallback: This shouldn't happen but provides backwards compatibility
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    /**
      * Save a new quiz result
      */
     @Transactional
     public QuizResultResponseDto saveQuizResult(String email, QuizResultRequestDto request) {
         log.info("Saving quiz result for user: {} - Quiz: {}", email, request.getQuizDomain());
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getCurrentAuthenticatedUser();
 
         QuizResult quizResult = QuizResult.builder()
                 .user(user)
@@ -57,8 +77,7 @@ public class QuizResultService {
      * Get all quiz results for a user
      */
     public List<QuizResultResponseDto> getUserQuizResults(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getCurrentAuthenticatedUser();
 
         List<QuizResult> results = quizResultRepository.findByUserOrderByCompletedAtDesc(user);
 
@@ -73,8 +92,7 @@ public class QuizResultService {
      * Get quiz results for a specific quiz domain
      */
     public List<QuizResultResponseDto> getUserQuizResultsByDomain(String email, String quizDomain) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getCurrentAuthenticatedUser();
 
         List<QuizResult> results = quizResultRepository
                 .findByUserAndQuizDomainOrderByCompletedAtDesc(user, quizDomain);
@@ -90,8 +108,7 @@ public class QuizResultService {
      * Get the best result for a specific quiz domain
      */
     public QuizResultResponseDto getBestResultByDomain(String email, String quizDomain) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getCurrentAuthenticatedUser();
 
         return quizResultRepository.findBestResultByUserAndQuizDomain(user, quizDomain)
                 .map(this::convertToDto)
@@ -102,8 +119,7 @@ public class QuizResultService {
      * Get user quiz statistics
      */
     public QuizStatisticsDto getUserStatistics(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = getCurrentAuthenticatedUser();
 
         long totalAttempts = quizResultRepository.countByUser(user);
         long passedCount = quizResultRepository.countByUserAndPassedTrue(user);

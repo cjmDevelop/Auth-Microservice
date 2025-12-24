@@ -21,14 +21,24 @@ public class NoteService {
     private final UserRepository userRepository;
 
     /**
-     * Getting current authenticated user's ID by email from JWT token in
-     * SecurityContext
+     * Getting current authenticated user's ID from JWT token in SecurityContext
+     * FIXED: Now properly handles multi-app support by using the User principal
      */
     private Long getCurrentAuthenticatedUserId() {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName(); // JWT contains email as "subject" ?
 
+        // The principal is the actual User object (set by JwtAuthenticationFilter)
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof User) {
+            // Direct access to authenticated user - most reliable
+            User user = (User) principal;
+            return user.getId();
+        }
+
+        // Fallback: This shouldn't happen but provides backwards compatibility
+        String email = authentication.getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 

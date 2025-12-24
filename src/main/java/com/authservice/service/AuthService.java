@@ -182,10 +182,19 @@ public class AuthService {
     public AuthResponseDto login(LoginRequestDto request) {
         log.info("Login attempt for user: {} (app: {})", request.getEmail(), request.getAppSource());
 
+        // Construct username for authentication
+        // Format: "email|appSource" or just "email" for backwards compatibility
+        String username;
+        if (request.getAppSource() != null && !request.getAppSource().isEmpty()) {
+            username = request.getEmail() + "|" + request.getAppSource();
+        } else {
+            username = request.getEmail();
+        }
+
         // Authenticating user, incorrect credentials should throw an exception
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
+                        username,
                         request.getPassword()));
 
         // Instantiate 'user' object by finding user in database by email and appSource

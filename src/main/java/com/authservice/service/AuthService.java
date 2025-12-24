@@ -250,12 +250,25 @@ public class AuthService {
     public AuthResponseDto refreshAccessToken(String refreshToken) {
         log.info("Attempting to refresh access token");
 
-        // Extract username from refresh token
+        // Extract username and appSource from refresh token
         String username = jwtService.extractUsername(refreshToken);
+        String appSourceStr = jwtService.extractAppSource(refreshToken);
 
-        // Load user from database
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        // Load user from database with appSource support
+        User user;
+        if (appSourceStr != null && !appSourceStr.isEmpty()) {
+            try {
+                AppSource appSource = AppSource.valueOf(appSourceStr);
+                user = userRepository.findByEmailAndAppSource(username, appSource)
+                        .orElseThrow(() -> new RuntimeException("User not found for this application"));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid app source in refresh token: " + appSourceStr);
+            }
+        } else {
+            // Backwards compatibility: if no appSource in token, use email only
+            user = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        }
 
         // Validate refresh token
         if (!jwtService.isTokenValid(refreshToken, user)) {
@@ -265,7 +278,7 @@ public class AuthService {
         // Generate new access token
         String newAccessToken = jwtService.generateToken(user);
 
-        log.info("Access token refreshed successfully for: {}", user.getEmail());
+        log.info("Access token refreshed successfully for: {} (app: {})", user.getEmail(), user.getAppSource());
 
         // Return new access token with same refresh token
         return AuthResponseDto.builder()

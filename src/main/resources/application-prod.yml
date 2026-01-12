@@ -45,7 +45,7 @@ resend:
 
 jwt:
   secret: ${JWT_SECRET}
-  expiration: 432000000
+  expiration: 432000
   refresh-expiration: 604800000
 
 twilio:
